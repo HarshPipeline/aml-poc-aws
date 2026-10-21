@@ -4,6 +4,21 @@ A React investigation console with a Python streaming backend over the five-cust
 
 Customers, accounts, counterparties, policy thresholds and transactions are read from Amazon RDS PostgreSQL. Alerts, cases, documents, the audit trail and LangGraph checkpoints are stored in a writable `aml_app` schema in the same database. The app does not read JSON or CSV files at runtime.
 
+## React frontend and Python backend
+
+**The application frontend is React with TypeScript and Vite.** React renders the alert queue, investigation workspace, embedded customer KYC dashboard, transaction monitoring, audit trail and detection policies. These screens share the KYC dashboard's black-and-gold theme.
+
+Python/FastAPI remains the backend for transaction streaming, AML detection, AI investigations and PostgreSQL persistence. Database credentials and model API keys remain on the server.
+
+Streamlit is no longer the default interface: both the local launcher and Docker Compose start the React console. The old Streamlit source is retained for reference.
+
+The React migration was delivered on **`Harsh-Edit`**. Check out this branch to use it; pushing the branch does not merge it into `main` or deploy it to AWS.
+
+```bash
+git fetch origin
+git switch Harsh-Edit
+```
+
 ## Start
 
 Copy `.env.example` to `.env` and set the `DB_*` values for the RDS instance. The database user must be able to create the `aml_app` schema.
