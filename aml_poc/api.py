@@ -211,11 +211,10 @@ def create_app(service=None):
             generate(), media_type="text/event-stream", headers={"Cache-Control": "no-cache"}
         )
 
-    from pathlib import Path
+    import os
 
     import psycopg
-    from fastapi.responses import FileResponse, JSONResponse
-    from fastapi.staticfiles import StaticFiles
+    from fastapi.responses import JSONResponse, RedirectResponse
 
     from .kyc_postgres import app as kyc_app
 
@@ -230,14 +229,12 @@ def create_app(service=None):
 
     app.include_router(kyc_app.router)
 
-    dashboard = Path(__file__).resolve().parent.parent / "kyc-dashboard" / "dist"
-    if dashboard.exists():
-        app.mount("/kyc-assets", StaticFiles(directory=dashboard), name="kyc-assets")
-
-        @app.get("/kyc")
-        @app.get("/kyc/{customer_id}")
-        def dashboard_window():
-            return FileResponse(dashboard / "index.html")
+    @app.get("/kyc")
+    @app.get("/kyc/{customer_id}")
+    def dashboard_window(request: Request):
+        console = os.environ.get("AML_CONSOLE_URL", "http://127.0.0.1:8501").rstrip("/")
+        suffix = f"?{request.url.query}" if request.url.query else ""
+        return RedirectResponse(console + request.url.path + suffix)
 
     return app
 

@@ -145,7 +145,7 @@ export function ErrorState({ message }: { message: string }) {
         <p className="font-semibold text-red-400">Couldn't load data</p>
         <p className="mt-2 text-sm text-neutral-400">{message}</p>
         <p className="mt-3 text-xs text-neutral-500">
-          Check that the API is running on port 8000 and the AWS database is started.
+          Check the API connection and PostgreSQL availability. Refresh to retry.
         </p>
       </div>
     </div>

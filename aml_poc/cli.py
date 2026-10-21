@@ -26,6 +26,7 @@ def serve(api_port=8001, ui_port=8501):
                 str(api_port),
             ],
             cwd=ROOT,
+            env={**os.environ, "AML_CONSOLE_URL": f"http://127.0.0.1:{ui_port}"},
         )
         processes.append(api)
         address = f"http://127.0.0.1:{api_port}"
@@ -42,22 +43,17 @@ def serve(api_port=8001, ui_port=8501):
             time.sleep(0.2)
         if not ready:
             raise RuntimeError("API did not become ready")
-        environment = {**os.environ, "AML_API_URL": address, "STREAMLIT_BROWSER_GATHER_USAGE_STATS": "false"}
+        environment = {**os.environ, "AML_API_URL": address}
         ui = subprocess.Popen(
             [
                 sys.executable,
                 "-m",
-                "streamlit",
-                "run",
-                str(ROOT / "aml_poc" / "ui.py"),
-                "--server.address",
+                "uvicorn",
+                "aml_poc.web:app",
+                "--host",
                 "127.0.0.1",
-                "--server.port",
+                "--port",
                 str(ui_port),
-                "--server.headless",
-                "true",
-                "--browser.gatherUsageStats",
-                "false",
             ],
             cwd=ROOT,
             env=environment,
@@ -85,7 +81,7 @@ def serve(api_port=8001, ui_port=8501):
 def main():
     parser = argparse.ArgumentParser(description="Streaming AML investigation POC")
     sub = parser.add_subparsers(dest="command")
-    launch = sub.add_parser("serve", help="Run the API and Streamlit console")
+    launch = sub.add_parser("serve", help="Run the API and React console")
     launch.add_argument("--api-port", type=int, default=8001)
     launch.add_argument("--ui-port", type=int, default=8501)
     replay = sub.add_parser("replay", help="Start the server's Python replay worker")
