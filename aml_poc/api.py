@@ -37,6 +37,13 @@ def create_app(service=None):
 
     app = FastAPI(title="AML Investigation POC", version="0.1.0", lifespan=lifespan)
 
+    @app.middleware("http")
+    async def strip_backend_prefix(request: Request, call_next):
+        path = request.scope.get("path", "")
+        if path == "/backend" or path.startswith("/backend/"):
+            request.scope["path"] = path[len("/backend") :] or "/"
+        return await call_next(request)
+
     @app.exception_handler(ValueError)
     async def invalid(request: Request, error: ValueError):
         from fastapi.responses import JSONResponse
@@ -214,8 +221,10 @@ def create_app(service=None):
     import os
 
     import psycopg
-    from fastapi.responses import JSONResponse, RedirectResponse
+    from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
+    from fastapi.staticfiles import StaticFiles
 
+    from .config import ROOT
     from .kyc_postgres import app as kyc_app
 
     @app.exception_handler(psycopg.OperationalError)
@@ -229,12 +238,22 @@ def create_app(service=None):
 
     app.include_router(kyc_app.router)
 
-    @app.get("/kyc")
-    @app.get("/kyc/{customer_id}")
-    def dashboard_window(request: Request):
-        console = os.environ.get("AML_CONSOLE_URL", "http://127.0.0.1:8501").rstrip("/")
-        suffix = f"?{request.url.query}" if request.url.query else ""
-        return RedirectResponse(console + request.url.path + suffix)
+    dashboard = ROOT / "kyc-dashboard" / "dist"
+    serve_console = os.environ.get("AML_SERVE_CONSOLE", "").lower() in {"1", "true", "yes"}
+    if dashboard.exists() and serve_console:
+        app.mount("/kyc-assets", StaticFiles(directory=dashboard), name="kyc-assets")
+
+        @app.get("/{path:path}")
+        def console(path: str):
+            return FileResponse(dashboard / "index.html", headers={"Cache-Control": "no-cache"})
+    else:
+
+        @app.get("/kyc")
+        @app.get("/kyc/{customer_id}")
+        def dashboard_window(request: Request):
+            console_url = os.environ.get("AML_CONSOLE_URL", "http://127.0.0.1:8501").rstrip("/")
+            suffix = f"?{request.url.query}" if request.url.query else ""
+            return RedirectResponse(console_url + request.url.path + suffix)
 
     return app
 

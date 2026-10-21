@@ -47,6 +47,15 @@ def test_react_deep_links_and_missing_build(tmp_path):
         assert "React console" in response.text
 
 
+def test_api_accepts_backend_prefix():
+    from types import SimpleNamespace
+
+    from aml_poc.api import create_app
+
+    with TestClient(create_app(service=SimpleNamespace(mode="demo"))) as client:
+        assert client.get("/backend/health").json() == {"status": "ok", "mode": "demo"}
+
+
 def test_legacy_kyc_links_redirect_to_console(monkeypatch):
     from types import SimpleNamespace
 

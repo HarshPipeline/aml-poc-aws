@@ -14,5 +14,6 @@ COPY .streamlit ./.streamlit
 COPY --from=kyc-build /kyc/dist ./kyc-dashboard/dist
 RUN pip install --no-cache-dir --no-deps .
 ENV STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
-EXPOSE 8001 8501
+ENV AML_SERVE_CONSOLE=true
+EXPOSE 8001
 CMD ["python", "-m", "uvicorn", "aml_poc.api:app", "--host", "0.0.0.0", "--port", "8001"]

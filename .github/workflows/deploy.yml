@@ -1,0 +1,59 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::129874388416:role/github-actions-aml-api
+
+      - id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/aml-api:${{ github.sha }}
+
+      - uses: aws-actions/amazon-ecs-deploy-express-service@v1
+        with:
+          service-name: aml-app
+          cluster: default
+          image: ${{ steps.login-ecr.outputs.registry }}/aml-api:${{ github.sha }}
+          execution-role-arn: arn:aws:iam::129874388416:role/ecsTaskExecutionRole
+          infrastructure-role-arn: arn:aws:iam::129874388416:role/ecsInfrastructureRoleForExpressServices
+          container-port: 8001
+          health-check-path: /health
+          cpu: "1024"
+          memory: "2048"
+          min-task-count: 1
+          max-task-count: 1
+          environment-variables: |
+            [
+              {"name":"DB_HOST","value":"${{ secrets.DB_HOST }}"},
+              {"name":"DB_PORT","value":"5432"},
+              {"name":"DB_NAME","value":"${{ secrets.DB_NAME }}"},
+              {"name":"DB_USER","value":"${{ secrets.DB_USER }}"},
+              {"name":"DB_PASSWORD","value":"${{ secrets.DB_PASSWORD }}"},
+              {"name":"DB_SSLMODE","value":"require"},
+              {"name":"AML_APP_SCHEMA","value":"aml_app"},
+              {"name":"AML_AGENT_MODE","value":"claude"},
+              {"name":"AML_SERVE_CONSOLE","value":"true"},
+              {"name":"ANTHROPIC_API_KEY","value":"${{ secrets.ANTHROPIC_API_KEY }}"},
+              {"name":"AML_CLAUDE_MODEL","value":"${{ secrets.AML_CLAUDE_MODEL }}"},
+              {"name":"OPENAI_API_KEY","value":"${{ secrets.OPENAI_API_KEY }}"},
+              {"name":"AML_OPENAI_MODEL","value":"${{ secrets.AML_OPENAI_MODEL }}"}
+            ]
