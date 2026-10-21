@@ -1,6 +1,6 @@
 # Streaming AML Investigation POC
 
-A runnable Python demo over the five-customer dataset in RDS. Replay the most recent synthetic transactions, inspect deterministic AML alerts, collect evidence with eight LangGraph capabilities, review a complete report, and record a human decision. No API key is required for demo mode.
+A React investigation console with a Python streaming backend over the five-customer dataset in RDS. Replay the most recent synthetic transactions, inspect deterministic AML alerts, collect evidence with eight LangGraph capabilities, review a complete report, and record a human decision. No API key is required for demo mode.
 
 Customers, accounts, counterparties, policy thresholds and transactions are read from Amazon RDS PostgreSQL. Alerts, cases, documents, the audit trail and LangGraph checkpoints are stored in a writable `aml_app` schema in the same database. The app does not read JSON or CSV files at runtime.
 
@@ -13,18 +13,18 @@ cd aml-poc-aws
 ./run.sh
 ```
 
-Open **http://127.0.0.1:8501**. Interactive API docs: **http://127.0.0.1:8001/docs**. The KYC dashboard is at **http://127.0.0.1:8001/kyc**.
+Open **http://127.0.0.1:8501**. Interactive API docs: **http://127.0.0.1:8001/docs**. Customer profiles are at **http://127.0.0.1:8501/kyc**.
 The launcher creates a virtual environment on first use and installs the project. Both services bind only to localhost. Stop with Ctrl+C.
 
-1. In **Live stream**, press **Start / resume**. The default rate is 50 events per second. Reports are built after replay finishes so investigators see the latest evidence.
-2. In **Alert queue**, select **stream**, choose a signal and open its workbench.
+1. In **Monitoring**, press **Start / resume**. The default rate is 50 events per second. Reports are built after replay finishes so investigators see the latest evidence.
+2. In **Alert queue**, select **stream**, choose a signal and open its investigation.
 3. Run the investigation. Original inputs have no invoices, explanations or depositor documents, so the first report correctly shows incomplete evidence and no recommendation.
 4. Attach your structured supporting records in **Documents**, or use **Attach synthetic demo packet** to demonstrate the complete-report path. The packet is explicitly fictional and does not verify the transaction's legitimacy.
 5. Run a fresh investigation. Review the findings, innocent explanation, evidence IDs, critic result and editable SAR draft.
 6. Record **clear**, **request info** or **escalate** with your name and reason. This resumes the durable LangGraph interrupt. No automatic disposition or external SAR filing occurs.
-7. Download the complete report and case JSON; inspect **Audit trail** and **Evaluation & policy**.
+7. Download the complete report and case JSON; inspect **Audit trail** and **Detection policies**.
 
-The workbench also demonstrates missing KYC, unavailable transactions, missing/unreadable documents and conflicting policy. These paths end in incomplete reports for a human.
+The investigation also demonstrates missing KYC, unavailable transactions, missing/unreadable documents and conflicting policy. These paths end in incomplete reports for a human.
 
 For a container deployment, `docker compose up --build` starts the API and console. Both containers read RDS settings from `.env`. This optional path requires Docker; the local launcher is the verified development path.
 
@@ -102,7 +102,7 @@ Tests talk to the same RDS instance and write only to temporary `aml_test_*` sch
 
 This is a synthetic investigation demonstrator. Documents support structured intake, UTF-8 text, local PDF text extraction and optional Claude vision for PNG/JPEG/WebP. Model extraction is visibly classified as an observation; code compares extracted invoice IDs and amounts with transactions. Unreadable/low-confidence records stop the recommendation. Scanned-PDF OCR, authenticity checks and invoice-template forensics are not implemented. Policy retrieval uses exact triggered-pattern references from the RDS policy table, rather than a vector database or a refreshed regulatory corpus. The investigator name is an audit attribution field, not authenticated bank SSO or role enforcement. SAR narratives are drafts; nothing is filed. Do not expose the unauthenticated API publicly.
 
-API implementation references: [LangGraph interrupts](https://docs.langchain.com/oss/python/langgraph/interrupts), [Claude integration](https://docs.langchain.com/oss/python/integrations/chat/anthropic), [Streamlit fragments](https://docs.streamlit.io/develop/api-reference/execution-flow/st.fragment).
+API implementation references: [LangGraph interrupts](https://docs.langchain.com/oss/python/langgraph/interrupts), [Claude integration](https://docs.langchain.com/oss/python/integrations/chat/anthropic).
 
 ## Interface design
 
@@ -110,9 +110,9 @@ The black-and-gold console uses prioritized queues, customer context, evidence r
 
 ## Embedded customer KYC dashboard
 
-The supplied React dashboard is embedded in each investigation's **Customer KYC** tab and available through **Customer profiles**. All AML screens share its black/amber design system. FastAPI serves the dashboard at `http://127.0.0.1:8001/kyc`. Every `/api/customers` request queries RDS; the React app does not read JSON or CSV files.
+The supplied React dashboard is embedded in each investigation's **Customer KYC** tab and available through **Customer profiles**. All AML screens share its black/amber design system. The React console runs at `http://127.0.0.1:8501`; KYC is a native React component inside the investigation, sharing the same navigation and theme. Every `/api/customers` request queries RDS; the React app does not read JSON or CSV files.
 
-Install Node.js 24 and npm alongside Python 3.12. On a fresh checkout, `./run.sh serve` installs and builds the KYC frontend automatically. To rebuild after frontend edits:
+Install Node.js 24 and npm alongside Python 3.12. On a fresh checkout, `./run.sh serve` installs and builds the React frontend automatically. To rebuild after frontend edits:
 
 ```bash
 npm ci --prefix kyc-dashboard
@@ -124,3 +124,13 @@ Restart the Python services after the initial build. Unknown screening, review a
 Connection failures produce HTTP 503; the dashboard does not substitute local data. Review status (current, due soon, overdue) is calculated in the API by comparing `kyc_next_review_date` with today's date.
 
 Two integration adjustments are retained: the `/kyc-assets/` build path and an explicit unknown PEP state when screening data is absent.
+
+## React development
+
+The console replaces Streamlit as the default UI. Routes include the alert queue, investigations, customer KYC, monitoring, audit and detection policies. The Python API retains streaming, model calls and PostgreSQL persistence. Database credentials and API keys stay on the server.
+
+For frontend development, run the Python API on port 8001 and `npm run dev --prefix kyc-dashboard`. Vite proxies `/backend/*` to the AML API and `/api/*` to the KYC API. The production `aml_poc.web` server uses the same proxy routes and supports direct links to investigation and customer pages. Set `AML_API_URL` on that server to change the upstream API.
+
+Build and check the UI with `npm run build --prefix kyc-dashboard` and `npm run lint --prefix kyc-dashboard`. The proxy tests in `tests/test_react_web.py` run without a database; the RDS integration tests still require the configured database. The legacy Streamlit source remains available for reference but is no longer launched.
+
+Legacy API `/kyc` links redirect to the React console. Set `AML_CONSOLE_URL` on the API if the console uses a different public address.

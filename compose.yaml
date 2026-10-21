@@ -29,4 +29,4 @@ services:
     depends_on:
       api:
         condition: service_healthy
-    command: ["python", "-m", "streamlit", "run", "aml_poc/ui.py", "--server.address", "0.0.0.0", "--server.port", "8501", "--browser.gatherUsageStats", "false"]
+    command: ["python", "-m", "uvicorn", "aml_poc.web:app", "--host", "0.0.0.0", "--port", "8501"]

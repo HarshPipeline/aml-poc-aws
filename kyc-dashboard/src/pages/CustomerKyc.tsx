@@ -10,15 +10,16 @@ import HistoryTab from '../kyc/HistoryTab'
 import ProfileTab from '../kyc/ProfileTab'
 import TransactionsTab from '../kyc/TransactionsTab'
 
-export default function CustomerKyc() {
-  const { customerId = '' } = useParams()
+export default function CustomerKyc({ customerIdOverride }: { customerIdOverride?: string } = {}) {
+  const { customerId: routeCustomerId = '' } = useParams()
+  const customerId = customerIdOverride ?? routeCustomerId
   const [searchParams, setSearchParams] = useSearchParams()
   const [data, setData] = useState<KycData | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const requested = searchParams.get('tab') as TabKey | null
   const tab: TabKey = TABS.some((t) => t.key === requested) ? requested! : 'profile'
-  const setTab = (t: TabKey) => setSearchParams(t === 'profile' ? {} : { tab: t }, { replace: true })
+  const setTab = (t: TabKey) => setSearchParams(previous => { const next = new URLSearchParams(previous); if (t === 'profile') next.delete('tab'); else next.set('tab', t); return next }, { replace: true })
 
   useEffect(() => {
     setData(null)
