@@ -5,7 +5,8 @@ __pycache__
 .pytest_cache
 .ruff_cache
 *.egg-info
-
+data
+aml_demo_data_cleaned
 
 kyc-dashboard/node_modules
 kyc-dashboard/dist

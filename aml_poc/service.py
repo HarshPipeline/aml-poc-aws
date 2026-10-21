@@ -4,7 +4,7 @@ import threading
 import uuid
 from datetime import datetime
 
-from .config import DATA, RUNTIME, agent_mode
+from .config import agent_mode, app_schema
 from .data import Dataset, by_customer
 from .models import EvidenceDocument, ReviewDecision, Transaction
 from .rules import DetectorEngine
@@ -13,22 +13,29 @@ from .workflow import Workflow
 
 
 class Service:
-    def __init__(self, data_path=DATA, runtime_path=RUNTIME, mode=None):
+    def __init__(self, data=None, schema=None, mode=None):
         self.lock = threading.RLock()
         self.graph_lock = threading.Lock()
         self.stop_event = threading.Event()
         self.worker = None
         self.error = None
-        self.data = Dataset(data_path)
-        self.store = Store(runtime_path, lock=self.lock)
+        self.data = data or Dataset.load()
+        self.schema = schema or app_schema()
+        self.store = Store(self.schema, lock=self.lock)
         self.mode = mode or agent_mode()
         known_hash = self.store.metadata("policy_hash")
         if known_hash and known_hash != self.data.policy_hash:
             self.store.close()
             raise ValueError(
-                "Policy changed. Use a new AML_RUNTIME_DIR to preserve the existing policy-versioned audit run."
+                "RDS policy_patterns changed. Set a new AML_APP_SCHEMA to preserve the existing policy-versioned audit run."
             )
         self.store.set_metadata("policy_hash", self.data.policy_hash)
+        # The split is fixed on first start so rows inserted into RDS later only extend the stream.
+        if self.store.metadata("stream_start", False) is False:
+            start = self.data.stream_start
+            self.store.set_metadata("stream_start", start.isoformat() if start else None)
+        saved = self.store.metadata("stream_start")
+        self.data.split(datetime.fromisoformat(saved) if saved else None)
         if not self.store.metadata("history_loaded", False):
             self.store.add_events(self.data.history, "history")
             self.store.set_metadata("history_loaded", True)
@@ -39,7 +46,7 @@ class Service:
             datetime.fromisoformat(self.store.metadata("clock", "2000-01-01T00:00:00")),
         )
         self.engine = DetectorEngine(self.data)
-        self.workflow = Workflow(self.data, self.store, runtime_path, self.mode)
+        self.workflow = Workflow(self.data, self.store, self.schema, self.mode)
         self.reconcile()
         for case in self.store.all_cases():
             if (
@@ -53,11 +60,7 @@ class Service:
                 state = self.workflow.graph.get_state({"configurable": {"thread_id": case["case_id"]}})
                 if state.values and state.values["case"].get("decision"):
                     self._save_review(state.values["case"])
-        self.stream = (
-            self.data.read_transactions(data_path / "stream_transactions.csv")
-            if (data_path / "stream_transactions.csv").exists()
-            else []
-        )
+        self.stream = self.data.stream
         self.stream_ids = {r.transaction_id for r in self.stream}
         self.stream_done = len(self.stream_ids.intersection(r.transaction_id for r in self.rows))
 
@@ -124,11 +127,15 @@ class Service:
     def list_alerts(self, scope="all"):
         with self.lock:
             output = []
+            cases = self.store.latest_cases()
+            versions = {}
             for alert in self.store.alerts():
                 is_stream = any(i in self.stream_ids for i in alert["transaction_ids"])
                 if scope == "stream" and not is_stream or scope == "history" and is_stream:
                     continue
-                case = self.store.latest_case(alert["alert_id"])
+                case = cases.get(alert["alert_id"])
+                if alert["customer_id"] not in versions:
+                    versions[alert["customer_id"]] = self.document_version(alert["customer_id"])
                 profile = self.data.customers[alert["customer_id"]]
                 output.append(
                     {
@@ -142,7 +149,7 @@ class Service:
                             case
                             and (
                                 case["alert"]["revision"] != alert["revision"]
-                                or case.get("document_version") != self.document_version(alert["customer_id"])
+                                or case.get("document_version") != versions[alert["customer_id"]]
                             )
                         ),
                     }
@@ -267,7 +274,7 @@ class Service:
     def status(self):
         with self.lock:
             alerts = self.store.alerts()
-            cases = self.store.all_cases()
+            cases = self.store.case_counts()
             return {
                 "mode": self.mode,
                 "model": self.workflow.model_name,
@@ -279,11 +286,14 @@ class Service:
                 "running": bool(self.worker and self.worker.is_alive() and not self.stop_event.is_set()),
                 "alerts": len(alerts),
                 "stream_alerts": sum(any(i in self.stream_ids for i in a["transaction_ids"]) for a in alerts),
-                "awaiting_review": sum(c["status"] == "awaiting_review" for c in cases),
-                "reviewed": sum(c["status"] == "reviewed" for c in cases),
+                "awaiting_review": cases.get("awaiting_review", 0),
+                "reviewed": cases.get("reviewed", 0),
                 "error": self.error,
                 "policy_hash": self.data.policy_hash,
-                "audit_integrity": self.store.verify_audit(),
+                "stream_start": self.data.stream_start.isoformat() if self.data.stream_start else None,
+                "data_source": "rds",
+                "app_schema": self.schema,
+                "audit_integrity": self.store.verify_audit(full=False),
                 "tracing": __import__("os").environ.get("LANGSMITH_TRACING", "false").lower() == "true",
             }
 
@@ -292,7 +302,7 @@ class Service:
             if self.worker and self.worker.is_alive():
                 raise ValueError("Replay worker is active; pause and wait for it to stop")
             if not self.stream:
-                raise ValueError("Generate the stream first with aml-poc prepare")
+                raise ValueError("No RDS transactions fall on or after the stream start; nothing to replay")
             self.stop_event.clear()
             self.error = None
             self.store.audit(

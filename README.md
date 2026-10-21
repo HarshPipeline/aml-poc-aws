@@ -1,16 +1,20 @@
 # Streaming AML Investigation POC
 
-A runnable Python demo using the supplied five-customer dataset. Replay 1,000 synthetic future transactions, inspect deterministic AML alerts, collect evidence with eight LangGraph capabilities, review a complete report, and record a human decision. No API key is required for demo mode.
+A runnable Python demo over the five-customer dataset in RDS. Replay the most recent synthetic transactions, inspect deterministic AML alerts, collect evidence with eight LangGraph capabilities, review a complete report, and record a human decision. No API key is required for demo mode.
+
+Customers, accounts, counterparties, policy thresholds and transactions are read from Amazon RDS PostgreSQL. Alerts, cases, documents, the audit trail and LangGraph checkpoints are stored in a writable `aml_app` schema in the same database. The app does not read JSON or CSV files at runtime.
 
 ## Start
 
+Copy `.env.example` to `.env` and set the `DB_*` values for the RDS instance. The database user must be able to create the `aml_app` schema.
+
 ```bash
-cd aml-poc
+cd aml-poc-aws
 ./run.sh
 ```
 
-Open **http://127.0.0.1:8501**. Interactive API docs: **http://127.0.0.1:8001/docs**.
-The launcher creates a virtual environment on first use, installs the project, generates the stream and computes detector metrics. Both services bind only to localhost. Stop with Ctrl+C.
+Open **http://127.0.0.1:8501**. Interactive API docs: **http://127.0.0.1:8001/docs**. The KYC dashboard is at **http://127.0.0.1:8001/kyc**.
+The launcher creates a virtual environment on first use and installs the project. Both services bind only to localhost. Stop with Ctrl+C.
 
 1. In **Live stream**, press **Start / resume**. The default rate is 50 events per second. Reports are built after replay finishes so investigators see the latest evidence.
 2. In **Alert queue**, select **stream**, choose a signal and open its workbench.
@@ -22,22 +26,21 @@ The launcher creates a virtual environment on first use, installs the project, g
 
 The workbench also demonstrates missing KYC, unavailable transactions, missing/unreadable documents and conflicting policy. These paths end in incomplete reports for a human.
 
-For a container deployment, `docker compose up --build` starts the API and console with a persistent named runtime volume. This optional path requires Docker; the local launcher is the verified development path.
+For a container deployment, `docker compose up --build` starts the API and console. Both containers read RDS settings from `.env`. This optional path requires Docker; the local launcher is the verified development path.
 
 ## Python streaming
 
 ```bash
-./run.sh prepare
 ./run.sh replay --rate 100
 ```
 
-The API owns a background Python replay thread. It reads timestamp-ordered CSV events, validates typed records, persists each event in DuckDB, re-evaluates the affected customer's detectors and updates episode alerts. Start/resume skips already committed transaction IDs. Pause and API restarts preserve progress. A duplicate ID with different contents is rejected. Late events are explicitly rejected rather than silently changing the past. Each event timestamp is the simulation's UTC watermark; arrival rate controls wall-clock replay speed.
+On first start the API loads RDS transactions older than the stream cutoff as history, runs the detectors, and stores committed events in `aml_app.events`. The default cutoff is the most recent 1,000 RDS rows; override it with `AML_STREAM_START` or `AML_STREAM_EVENTS`. Start/resume skips already committed transaction IDs. Pause and API restarts preserve progress. A duplicate ID with different contents is rejected. Late events are explicitly rejected rather than silently changing the past. Each event timestamp is the simulation's UTC watermark; arrival rate controls wall-clock replay speed.
 
-External events can be posted as one transaction JSON object to `POST /transactions`; expected fields match `data/transactions.csv`. `GET /events` streams server-sent status events. The console polls the API every two seconds. `POST /replay/clock` with `{"as_of":"2027-03-01T00:00:00"}` advances the demo clock without inserting fake payments, allowing the TM-08 quiet-period timer to fire. Advancing past unconsumed stream events will make them late; finish replay first.
+External events can be posted as one transaction JSON object to `POST /transactions`. `GET /events` streams server-sent status events. The console polls the API every two seconds. `POST /replay/clock` with `{"as_of":"2027-03-01T00:00:00"}` advances the demo clock without inserting fake payments, allowing the TM-08 quiet-period timer to fire. Advancing past unconsumed stream events will make them late; finish replay first.
 
 ## Rules and evidence
 
-Enabled patterns: TM-01 structuring, TM-03 out-of-region funnel deposits, TM-04 rapid funnel outflows, TM-07 pass-through matching, TM-08 wire bursts, TM-09 international wires. Numeric thresholds come from `policy_patterns.json`. Every alert retains the policy's SHA-256 and thresholds. A policy change requires a new runtime directory to preserve the original run.
+Enabled patterns: TM-01 structuring, TM-03 out-of-region funnel deposits, TM-04 rapid funnel outflows, TM-07 pass-through matching, TM-08 wire bursts, TM-09 international wires. Numeric thresholds come from the RDS `policy_patterns` table. Every alert retains the policy's SHA-256 and thresholds. A policy change requires a new `AML_APP_SCHEMA` to preserve the original run.
 
 - TM-01 and TM-03 evaluate rolling windows before grouping overlapping activity into episodes.
 - TM-04 uses FIFO monetary allocation within each deposit's 72-hour window. It never reuses an outgoing dollar or allocates more than a deposit's value. This is a tracing heuristic, not proof of money provenance; ordinary supplier payments can still be allocated.
@@ -45,7 +48,7 @@ Enabled patterns: TM-01 structuring, TM-03 out-of-region funnel deposits, TM-04 
 - TM-08 requires observed pre-burst quiet time, emits provisionally at the count/amount threshold, confirms after the post-burst quiet period, and withdraws an invalidated burst signal. A provisional alert does not assert future cessation.
 - TM-09 applies the 90-day international-wire window to missing payment information, unknown counterparties, country-profile conflicts and round-amount frequency.
 - Operational episode grouping uses 30 days of indicator inactivity for TM-07/TM-09, 7 days for TM-01 and 14 days for TM-03. Episode totals may span more than a qualifying rolling window. These are explicit demo deduplication choices, not regulatory thresholds.
-- `assigned_pattern_ids` in customer synthesis metadata is excluded from the evidence sent to agents. Runtime rules do not import the label reader. Golden labels are used only for synthetic preparation and evaluation.
+- Runtime rules do not import a label reader. Synthesis hints such as `assigned_pattern_ids` are excluded from the evidence sent to agents.
 
 The graph runs **Orchestrator → KYC → Transaction → Document → Policy → Investigation → Report → Critic → Human review**. The critic checks the full draft, including narrative sentences, retries once when appropriate, then sends defects to a person. Every fact/rule entry has a source; findings and narrative sentences cite evidence IDs. Code checks citation existence and numeric provenance. Demo mode does not measure semantic groundedness.
 
@@ -78,27 +81,26 @@ KYC, transaction, document-coverage and policy tools remain deterministic. Claud
 
 ## Data and persistence
 
-`data/` contains copies of the supplied historical CSV/JSON files. Originals in Downloads are unchanged. `stream_transactions.csv` adds 954 resampled normal events and 46 planted events across five episodes. The fixed seed makes regeneration reproducible; invoice IDs are unique for resampled normal payments. The stream's own answer key is `stream_labels.csv`.
+All operational inputs are read from RDS: `customers`, `kyc_profiles`, `beneficial_owners`, `accounts`, `counterparties`, `customer_counterparties`, `transactions` and `policy_patterns`. Connections used for those reads are read-only, with a 15-second statement timeout.
 
-Normal restaurant cash receipts are scheduled outside the injected funnel's early window to preserve its policy-required out-of-region majority. The extension is an engineered evaluation fixture, not a representative production distribution.
+Application state lives in the `aml_app` schema (override with `AML_APP_SCHEMA`): committed events, alerts, report versions, documents, hash-chained append-only audit records and LangGraph checkpoints. Each report snapshots an alert revision. New transaction evidence or a changed document collection requires a new report before a decision. Previous reports and human decisions remain accessible by case ID.
 
-`runtime/transactions.duckdb` stores events; `runtime/cases.sqlite` stores alerts, report versions, documents and hash-chained append-only audit records; `runtime/checkpoints.sqlite` stores LangGraph checkpoints. Each report snapshots an alert revision. New transaction evidence or a changed document collection requires a new report before a decision. Previous reports and human decisions remain accessible by case ID.
+To create a separate run, set `AML_APP_SCHEMA=another_schema` before launching. One API process owns a run; multiple workers are unsupported. The audit hash chain detects modifications but is not tamper-proof against an administrator who rewrites the whole database.
 
-To create a separate run, set `AML_RUNTIME_DIR=/absolute/path/to/new-run` before launching. Stop the API before running `prepare` against the same runtime database. One API process owns a run; multiple workers are unsupported. The audit hash chain detects modifications but is not tamper-proof against an administrator who rewrites the whole database.
+The optional loader in `kyc-postgres/db/load_data.py` can fill the operational tables from `aml_demo_data_cleaned/`. **Do not run it against an existing database without a backup and explicit intent to replace its tables: it drops and recreates them.** The app never runs the loader.
 
 ## Validation
 
 ```bash
 .venv/bin/python -m pytest
 .venv/bin/ruff check aml_poc tests
-./run.sh backtest
 ```
 
-`runtime/evaluation.json` reports scenario-pattern coverage, alerts without planted overlap, normal rows included in alert evidence, and exact matching semantics. Group coverage means a matching-pattern alert overlaps at least one labeled transaction in the group; it is not row recall, model accuracy or a claim of confirmed crime. Agent quality is left unmeasured until live-model evaluation is performed.
+Tests talk to the same RDS instance and write only to temporary `aml_test_*` schemas, which they drop afterwards. They skip if `DB_HOST` is unset. Detector coverage scoring against held-out labels is not part of the runtime path; those labels are not stored in RDS.
 
 ## POC boundaries
 
-This is a synthetic, local investigation demonstrator. It uses SQLite for case/audit/checkpoint persistence instead of the plan's production Postgres. Documents support structured intake, UTF-8 text, local PDF text extraction and optional Claude vision for PNG/JPEG/WebP. Model extraction is visibly classified as an observation; code compares extracted invoice IDs and amounts with transactions. Unreadable/low-confidence records stop the recommendation. Scanned-PDF OCR, authenticity checks and invoice-template forensics are not implemented. Policy retrieval uses exact triggered-pattern references from the supplied policy, rather than a vector database or a refreshed regulatory corpus. The local investigator name is an audit attribution field, not authenticated bank SSO or role enforcement. SAR narratives are drafts; nothing is filed. Do not expose the unauthenticated local API publicly.
+This is a synthetic investigation demonstrator. Documents support structured intake, UTF-8 text, local PDF text extraction and optional Claude vision for PNG/JPEG/WebP. Model extraction is visibly classified as an observation; code compares extracted invoice IDs and amounts with transactions. Unreadable/low-confidence records stop the recommendation. Scanned-PDF OCR, authenticity checks and invoice-template forensics are not implemented. Policy retrieval uses exact triggered-pattern references from the RDS policy table, rather than a vector database or a refreshed regulatory corpus. The investigator name is an audit attribution field, not authenticated bank SSO or role enforcement. SAR narratives are drafts; nothing is filed. Do not expose the unauthenticated API publicly.
 
 API implementation references: [LangGraph interrupts](https://docs.langchain.com/oss/python/langgraph/interrupts), [Claude integration](https://docs.langchain.com/oss/python/integrations/chat/anthropic), [Streamlit fragments](https://docs.streamlit.io/develop/api-reference/execution-flow/st.fragment).
 
@@ -108,7 +110,7 @@ The black-and-gold console uses prioritized queues, customer context, evidence r
 
 ## Embedded customer KYC dashboard
 
-The supplied React dashboard is embedded in each investigation's **Customer KYC** tab and available through **Customer profiles**. All AML screens share its black/amber design system. FastAPI serves the dashboard at `http://127.0.0.1:8001/kyc` and adapts operational customer, account and transaction data through `/api/customers`.
+The supplied React dashboard is embedded in each investigation's **Customer KYC** tab and available through **Customer profiles**. All AML screens share its black/amber design system. FastAPI serves the dashboard at `http://127.0.0.1:8001/kyc`. Every `/api/customers` request queries RDS; the React app does not read JSON or CSV files.
 
 Install Node.js 24 and npm alongside Python 3.12. On a fresh checkout, `./run.sh serve` installs and builds the KYC frontend automatically. To rebuild after frontend edits:
 
@@ -119,18 +121,6 @@ NODE_DISABLE_COMPILE_CACHE=1 npm run build --prefix kyc-dashboard
 
 Restart the Python services after the initial build. Unknown screening, review and balance fields remain unknown; no verification is inferred from missing data. Monthly comparisons exclude the first and last observed months conservatively. The reference dashboard's review-cycle values are demonstration settings, not a bank-approved policy.
 
-Only synthetic datasets are included. API keys, local runtime databases, reports, screenshots, virtual environments and frontend dependencies are excluded from Git.
-
-## Current dashboard source package
-
-The canonical supplied source is now `kyc-dashboard-share (2)`. Its React frontend lives in `kyc-dashboard/`; its PostgreSQL API, schema and loader are preserved in `kyc-postgres/`. The frontend is identical to the preceding supplied version. The app continues serving it through the local operational-data adapter until a PostgreSQL connection is configured.
-
-The PostgreSQL loader expects an additional `aml_demo_data_cleaned/` directory containing nested `kyc_profile` records. Those enriched records and database credentials were not included in the package. **Do not run the loader against an existing database without a backup and explicit intent to replace its tables: it drops and recreates them.** The loader is never run automatically by this app.
+Connection failures produce HTTP 503; the dashboard does not substitute local data. Review status (current, due soon, overdue) is calculated in the API by comparing `kyc_next_review_date` with today's date.
 
 Two integration adjustments are retained: the `/kyc-assets/` build path and an explicit unknown PEP state when screening data is absent.
-
-### PostgreSQL connection
-
-Set `AML_KYC_SOURCE=postgres` and the `DB_*` variables in the ignored `.env`, then restart `./run.sh serve`. The embedded dashboard uses the supplied PostgreSQL queries; local AML replay and investigation storage remain unchanged. Connections enforce read-only transactions and a 15-second statement timeout. No loader or schema migration runs automatically. Connection failures produce HTTP 503; the dashboard does not silently substitute local data.
-
-The deployment must allow this machine to reach the database on its configured port. Credentials are local only. The PostgreSQL source was wired and the frontend build verified, but the supplied RDS endpoint timed out during the initial connection check; live database results remain unverified until network access is available.

@@ -10,7 +10,6 @@ WORKDIR /app
 COPY requirements.lock pyproject.toml ./
 RUN pip install --no-cache-dir -r requirements.lock
 COPY aml_poc ./aml_poc
-COPY data ./data
 COPY .streamlit ./.streamlit
 COPY --from=kyc-build /kyc/dist ./kyc-dashboard/dist
 RUN pip install --no-cache-dir --no-deps .

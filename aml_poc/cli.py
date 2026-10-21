@@ -6,45 +6,12 @@ import subprocess
 import sys
 import time
 
-from .config import DATA, ROOT, RUNTIME
-
-
-def prepare():
-    from .data import Dataset
-    from .evaluate import evaluate
-    from .generate import generate
-    from .store import Store
-
-    manifest = generate(DATA)
-    dataset = Dataset(DATA)
-    metrics = {"history": evaluate(dataset), "combined": evaluate(dataset, include_stream=True)}
-    RUNTIME.mkdir(parents=True, exist_ok=True)
-    (RUNTIME / "evaluation.json").write_text(json.dumps(metrics, indent=2) + "\n")
-    store = Store(RUNTIME)
-    store.set_metadata("evaluation", metrics)
-    store.close()
-    print(
-        json.dumps(
-            {
-                "stream": manifest,
-                "history": {
-                    k: metrics["history"][k] for k in ["alerts", "detected_groups", "scenario_pattern_groups"]
-                },
-                "combined": {
-                    k: metrics["combined"][k]
-                    for k in ["alerts", "detected_groups", "scenario_pattern_groups"]
-                },
-            },
-            indent=2,
-        )
-    )
+from .config import ROOT
 
 
 def serve(api_port=8001, ui_port=8501):
     import requests
 
-    if not (DATA / "stream_transactions.csv").exists() or not (RUNTIME / "evaluation.json").exists():
-        prepare()
     processes = []
     try:
         api = subprocess.Popen(
@@ -63,7 +30,7 @@ def serve(api_port=8001, ui_port=8501):
         processes.append(api)
         address = f"http://127.0.0.1:{api_port}"
         ready = False
-        for _ in range(100):
+        for _ in range(600):
             if api.poll() is not None:
                 raise RuntimeError("API exited during startup. Check the error above.")
             try:
@@ -118,8 +85,6 @@ def serve(api_port=8001, ui_port=8501):
 def main():
     parser = argparse.ArgumentParser(description="Streaming AML investigation POC")
     sub = parser.add_subparsers(dest="command")
-    sub.add_parser("prepare", help="Generate 1,000 stream events and evaluate detectors")
-    sub.add_parser("backtest", help="Evaluate history and stream against held-out labels")
     launch = sub.add_parser("serve", help="Run the API and Streamlit console")
     launch.add_argument("--api-port", type=int, default=8001)
     launch.add_argument("--ui-port", type=int, default=8501)
@@ -128,9 +93,7 @@ def main():
     replay.add_argument("--api", default="http://127.0.0.1:8001")
     replay.add_argument("--no-investigate", action="store_true")
     args = parser.parse_args()
-    if args.command in {"prepare", "backtest"}:
-        prepare()
-    elif args.command == "replay":
+    if args.command == "replay":
         import requests
 
         response = requests.post(

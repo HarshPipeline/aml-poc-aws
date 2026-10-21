@@ -185,11 +185,6 @@ def create_app(service=None):
                 "events": svc(request).store.audit_rows(case_id),
             }
 
-    @app.get("/metrics")
-    def metrics(request: Request):
-        with svc(request).lock:
-            return svc(request).store.metadata("evaluation", {})
-
     @app.get("/policies")
     def policies(request: Request):
         return {"hash": svc(request).data.policy_hash, "patterns": list(svc(request).data.enabled.values())}
@@ -216,71 +211,24 @@ def create_app(service=None):
             generate(), media_type="text/event-stream", headers={"Cache-Control": "no-cache"}
         )
 
-    import os
     from pathlib import Path
 
-    from dotenv import load_dotenv
-    from fastapi.responses import FileResponse
+    import psycopg
+    from fastapi.responses import FileResponse, JSONResponse
     from fastapi.staticfiles import StaticFiles
 
-    from . import kyc_adapter
-    from .config import ROOT
+    from .kyc_postgres import app as kyc_app
 
-    load_dotenv(ROOT / ".env")
-    if os.environ.get("AML_KYC_SOURCE") == "postgres":
-        import psycopg2
-        from fastapi.responses import JSONResponse
+    @app.exception_handler(psycopg.OperationalError)
+    async def database_unavailable(request, error):
+        return JSONResponse(
+            status_code=503,
+            content={
+                "detail": "RDS database unavailable. Check the DB_* settings and that this host can reach the database port."
+            },
+        )
 
-        from .kyc_postgres import app as kyc_app
-
-        @app.exception_handler(psycopg2.OperationalError)
-        async def kyc_connection_error(request, error):
-            return JSONResponse(
-                status_code=503,
-                content={
-                    "detail": "KYC database unavailable. Check that PostgreSQL is running and reachable on port 5432 from this machine."
-                },
-            )
-
-        app.include_router(kyc_app.router)
-
-    @app.get("/api/customers")
-    def dashboard_customers(request: Request):
-        return [kyc_adapter.customer(svc(request), k) for k in svc(request).data.customers]
-
-    @app.get("/api/customers/{customer_id}")
-    def dashboard_profile(request: Request, customer_id: str):
-        if customer_id not in svc(request).data.customers:
-            raise HTTPException(404, "Customer not found")
-        return kyc_adapter.profile(svc(request), customer_id)
-
-    @app.get("/api/customers/{customer_id}/transactions")
-    def dashboard_transactions(
-        request: Request,
-        customer_id: str,
-        limit: int = 50,
-        offset: int = 0,
-        txn_type: str = "",
-        direction: str = "",
-        date_from: str = "",
-        date_to: str = "",
-    ):
-        if customer_id not in svc(request).data.customers:
-            raise HTTPException(404, "Customer not found")
-        rows = [
-            r
-            for r in kyc_adapter.transactions(svc(request), customer_id)
-            if (not txn_type or r["txn_type"] == txn_type)
-            and (not direction or r["direction"] == direction)
-            and (not date_from or r["txn_ts"][:10] >= date_from)
-            and (not date_to or r["txn_ts"][:10] <= date_to)
-        ]
-        rows.sort(key=lambda r: r["txn_ts"], reverse=True)
-        return {
-            "total": len(rows),
-            "total_usd": sum(r["amount"] for r in rows),
-            "rows": rows[max(offset, 0) : max(offset, 0) + min(max(limit, 1), 1000)],
-        }
+    app.include_router(kyc_app.router)
 
     dashboard = Path(__file__).resolve().parent.parent / "kyc-dashboard" / "dist"
     if dashboard.exists():

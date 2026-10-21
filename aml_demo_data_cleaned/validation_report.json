@@ -3,14 +3,14 @@
   "validation_version": "1.0",
   "overall_status": "PASS",
   "summary": {
-    "transaction_rows": 4815,
-    "golden_label_rows": 4815,
-    "normal_rows": 4572,
-    "suspicious_rows": 243,
-    "suspicious_rate": 0.050467,
+    "transaction_rows": 4956,
+    "golden_label_rows": 4956,
+    "normal_rows": 4701,
+    "suspicious_rows": 255,
+    "suspicious_rate": 0.051453,
     "customers": 5,
     "checking_accounts": 5,
-    "counterparties": 34,
+    "counterparties": 38,
     "policy_patterns": 12,
     "scenario_pattern_groups": 31
   },
@@ -28,17 +28,17 @@
     {
       "check": "Transaction IDs unique",
       "status": "PASS",
-      "detail": "4815 unique IDs"
+      "detail": "4956 unique IDs"
     },
     {
       "check": "Golden IDs unique",
       "status": "PASS",
-      "detail": "4815 unique IDs"
+      "detail": "4956 unique IDs"
     },
     {
       "check": "Rows and ID sets match",
       "status": "PASS",
-      "detail": "4815 transaction rows; 4815 label rows"
+      "detail": "4956 transaction rows; 4956 label rows"
     },
     {
       "check": "Customer IDs match labels",
@@ -63,7 +63,7 @@
     {
       "check": "All counterparties valid",
       "status": "PASS",
-      "detail": "34 referenced counterparties; 0 unknown"
+      "detail": "38 referenced counterparties; 0 unknown"
     },
     {
       "check": "All patterns valid",
@@ -108,7 +108,7 @@
     {
       "check": "Suspicious rate near 5%",
       "status": "PASS",
-      "detail": "5.05% (243 rows)"
+      "detail": "5.15% (255 rows)"
     },
     {
       "check": "Labels do not leak into transactions",
@@ -119,6 +119,66 @@
       "check": "All planted scenarios satisfy rules",
       "status": "PASS",
       "detail": "31/31 scenario-pattern groups pass"
+    },
+    {
+      "check": "Every original transaction unchanged",
+      "status": "PASS",
+      "detail": "4815 original rows compared field by field"
+    },
+    {
+      "check": "Every original label unchanged",
+      "status": "PASS",
+      "detail": "4815 original labels compared"
+    },
+    {
+      "check": "Original counterparties unchanged",
+      "status": "PASS",
+      "detail": "34 original + 4 new"
+    },
+    {
+      "check": "New rows fit their counterparty (direction, method, amount range)",
+      "status": "PASS",
+      "detail": "0 mismatches"
+    },
+    {
+      "check": "balance_after = opening + running money in - money out",
+      "status": "PASS",
+      "detail": "recomputed every row"
+    },
+    {
+      "check": "No negative balances",
+      "status": "PASS",
+      "detail": "0 negative"
+    },
+    {
+      "check": "current_balance_usd equals last balance_after",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "Original account fields unchanged",
+      "status": "PASS",
+      "detail": "new fields appended only"
+    },
+    {
+      "check": "Monthly summaries recompute exactly",
+      "status": "PASS",
+      "detail": "13 months x 5 accounts"
+    },
+    {
+      "check": "TM-07 pass-through: no new matching pairs created",
+      "status": "PASS",
+      "detail": "16 pairs before, 16 after, 0 new"
+    },
+    {
+      "check": "TM-08 wire burst: still only C005, still 2 bursts",
+      "status": "PASS",
+      "detail": "[('2025-12-09', '2026-01-12', 11, 160262.84, 33), ('2026-06-09', '2026-07-20', 12, 193884.41, 41)]"
+    },
+    {
+      "check": "TM-05 unrelated-business: C001 payroll stays below 30% of outflows",
+      "status": "PASS",
+      "detail": "worst full 30-day window share 27.5% (payroll treated as out-of-profile to be safe)"
     }
   ],
   "scenario_checks": [
@@ -276,41 +336,43 @@
       "pattern_id": "TM-08",
       "scenario_id": "SCN-C005-01",
       "status": "PASS",
-      "detail": "9 wires, $80,012.84, burst 27 days"
+      "detail": "11 wires (9 out, 2 in), $160,262.84, burst 33 days"
     },
     {
       "pattern_id": "TM-08",
       "scenario_id": "SCN-C005-02",
       "status": "PASS",
-      "detail": "10 wires, $96,834.41, burst 35 days"
+      "detail": "12 wires (10 out, 2 in), $193,884.41, burst 41 days"
     },
     {
       "pattern_id": "TM-09",
       "scenario_id": "SCN-C004-01",
       "status": "PASS",
-      "detail": "11 wires, round share 100%"
+      "detail": "13 international wires (11 out, 2 in) within 45 days, round share 100%, 2 from unknown third parties"
     },
     {
       "pattern_id": "TM-09",
       "scenario_id": "SCN-C004-02",
       "status": "PASS",
-      "detail": "11 wires, round share 100%"
+      "detail": "13 international wires (11 out, 2 in) within 41 days, round share 100%, 2 from unknown third parties"
     },
     {
       "pattern_id": "TM-09",
       "scenario_id": "SCN-C004-03",
       "status": "PASS",
-      "detail": "11 wires, round share 100%"
+      "detail": "13 international wires (11 out, 2 in) within 38 days, round share 100%, 2 from unknown third parties"
     },
     {
       "pattern_id": "TM-09",
       "scenario_id": "SCN-C004-04",
       "status": "PASS",
-      "detail": "11 wires, round share 100%"
+      "detail": "13 international wires (11 out, 2 in) within 39 days, round share 100%, 2 from unknown third parties"
     }
   ],
   "notes": [
     "All thresholds marked as synthetic demo configuration remain non-regulatory.",
-    "Labels indicate suspicious activity for review, not confirmed money laundering."
+    "Labels indicate suspicious activity for review, not confirmed money laundering.",
+    "balance_after and account balances: opening balances are as of 2025-10-07; normal-only balances stay inside each expected range except C002 (about $21k-$184k vs $25k-$180k, from existing payroll and card-settlement timing).",
+    "C001 structured cash is left in the account, so its actual balance rises far above the expected range; C004 and C005 suspicious scenarios include the incoming funds that pay for their outgoing wires."
   ]
 }

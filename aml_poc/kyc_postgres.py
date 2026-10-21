@@ -1,21 +1,12 @@
-"""Read-only KYC API over the aml_demo PostgreSQL database.
+"""Read-only KYC API over the RDS PostgreSQL database, mounted by the AML API."""
 
-Run from the Gates folder:
-    .venv/bin/uvicorn backend.main:app --reload --port 8000
-"""
-
-import os
 from contextlib import contextmanager
 from datetime import date
-from pathlib import Path
 
-import psycopg2
-from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from psycopg2.extras import RealDictCursor
 
-load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+from .db import connect
 
 DUE_SOON_DAYS = 60
 
@@ -30,21 +21,8 @@ app.add_middleware(
 
 @contextmanager
 def cursor():
-    conn = psycopg2.connect(
-        host=os.environ["DB_HOST"],
-        port=os.environ.get("DB_PORT", "5432"),
-        dbname=os.environ["DB_NAME"],
-        user=os.environ["DB_USER"],
-        password=os.environ["DB_PASSWORD"],
-        sslmode=os.environ.get("DB_SSLMODE", "require"),
-        connect_timeout=10,
-        options="-c default_transaction_read_only=on -c statement_timeout=15000",
-    )
-    try:
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            yield cur
-    finally:
-        conn.close()
+    with connect(read_only=True) as conn, conn.cursor() as cur:
+        yield cur
 
 
 def review_status(next_review):

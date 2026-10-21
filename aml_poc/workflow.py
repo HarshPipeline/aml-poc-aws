@@ -4,15 +4,16 @@ import copy
 import json
 import os
 import re
-import sqlite3
 from itertools import pairwise
 from typing import TypedDict
 
-from langgraph.checkpoint.sqlite import SqliteSaver
+from langgraph.checkpoint.postgres import PostgresSaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command, interrupt
+from psycopg.rows import tuple_row
 from pydantic import BaseModel, Field
 
+from .db import connect
 from .models import Assessment, Finding, ReviewDecision
 from .store import now
 
@@ -112,7 +113,7 @@ def render_report(case):
 
 
 class Workflow:
-    def __init__(self, data, store, root, mode="demo"):
+    def __init__(self, data, store, schema, mode="demo"):
         self.data, self.store, self.mode = data, store, mode
         self.model = None
         self.model_name = (
@@ -140,8 +141,9 @@ class Workflow:
             from .providers import OpenAIModel
 
             self.model = OpenAIModel(os.environ["AML_OPENAI_MODEL"])
-        self.connection = sqlite3.connect(root / "checkpoints.sqlite", check_same_thread=False)
-        saver = SqliteSaver(self.connection)
+        self.connection = connect(schema=schema, prepare_threshold=0, row_factory=tuple_row)
+        saver = PostgresSaver(self.connection)
+        saver.setup()
         builder = StateGraph(State)
         for name in [
             "orchestrator",
@@ -306,7 +308,7 @@ class Workflow:
             case,
             "fact",
             "Customer and expected activity",
-            f"customers.json#{profile['customer_id']}",
+            f"rds:customers+kyc_profiles#{profile['customer_id']}",
             case["profile"],
         )
 
@@ -323,7 +325,7 @@ class Workflow:
             case,
             "fact",
             "Triggering transactions",
-            "DuckDB transactions by explicit ID",
+            "RDS transactions by explicit ID",
             [r.model_dump(mode="json") for r in rows],
             alert["transaction_ids"],
         )
@@ -331,14 +333,14 @@ class Workflow:
             case,
             "fact",
             "Observed account history totals",
-            "DuckDB aggregation at case event clock",
+            "RDS aggregation of committed events at case event clock",
             self.store.baseline(alert["customer_id"], case["as_of"]),
         )
         self.add(
             case,
             "rule_result",
             "Deterministic rule results",
-            f"policy_patterns.json@{alert['policy_hash']}",
+            f"rds:policy_patterns@{alert['policy_hash']}",
             {
                 "patterns": alert["pattern_ids"],
                 "metrics": alert["metrics"],
@@ -358,7 +360,7 @@ class Workflow:
             case,
             "fact",
             "Counterparty registry",
-            "counterparties.json",
+            "rds:counterparties",
             {key: self.data.counterparties.get(key, {"status": "unknown"}) for key in sorted(parties)},
         )
 
@@ -410,7 +412,7 @@ class Workflow:
                     case,
                     "fact",
                     "Document-to-transaction comparisons",
-                    "Decimal and exact invoice-ID comparisons against DuckDB",
+                    "Decimal and exact invoice-ID comparisons against RDS transactions",
                     comparisons,
                 )
         case["missing"].extend(item for item in case["required"] if item not in coverage)
@@ -444,7 +446,7 @@ class Workflow:
             case,
             "fact",
             "Policy and advisory references",
-            f"policy_patterns.json@{self.data.policy_hash}",
+            f"rds:policy_patterns@{self.data.policy_hash}",
             entries,
         )
 

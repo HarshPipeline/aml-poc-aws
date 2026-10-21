@@ -5,8 +5,6 @@ from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(ROOT / ".env")
-DATA = Path(os.environ.get("AML_DATA_DIR", ROOT / "data"))
-RUNTIME = Path(os.environ.get("AML_RUNTIME_DIR", ROOT / "runtime"))
 
 
 def agent_mode() -> str:
@@ -14,3 +12,7 @@ def agent_mode() -> str:
     if mode not in {"demo", "claude", "openai"}:
         raise ValueError("AML_AGENT_MODE must be demo, claude, or openai")
     return mode
+
+
+def app_schema() -> str:
+    return os.environ.get("AML_APP_SCHEMA", "aml_app")

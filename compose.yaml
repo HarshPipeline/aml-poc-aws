@@ -3,8 +3,7 @@ services:
     build: .
     ports:
       - "127.0.0.1:8001:8001"
-    volumes:
-      - aml-runtime:/app/runtime
+    env_file: .env
     environment:
       AML_AGENT_MODE: ${AML_AGENT_MODE:-demo}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
@@ -14,22 +13,20 @@ services:
       LANGSMITH_TRACING: ${LANGSMITH_TRACING:-false}
       LANGSMITH_API_KEY: ${LANGSMITH_API_KEY:-}
       LANGSMITH_PROJECT: ${LANGSMITH_PROJECT:-aml-investigation-poc}
-    command: ["sh", "-c", "python -m aml_poc.cli prepare && python -m uvicorn aml_poc.api:app --host 0.0.0.0 --port 8001"]
+    command: ["python", "-m", "uvicorn", "aml_poc.api:app", "--host", "0.0.0.0", "--port", "8001"]
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health')"]
       interval: 5s
       timeout: 3s
-      retries: 20
+      retries: 40
   console:
     build: .
     ports:
       - "127.0.0.1:8501:8501"
+    env_file: .env
     environment:
       AML_API_URL: http://api:8001
     depends_on:
       api:
         condition: service_healthy
     command: ["python", "-m", "streamlit", "run", "aml_poc/ui.py", "--server.address", "0.0.0.0", "--server.port", "8501", "--browser.gatherUsageStats", "false"]
-
-volumes:
-  aml-runtime:

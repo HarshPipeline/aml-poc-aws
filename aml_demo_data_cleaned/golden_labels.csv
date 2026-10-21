@@ -58,16 +58,19 @@ TXN-000056,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-000057,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000058,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-000059,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004816,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-000060,C004,NORMAL,,,Consistent with C004 profile: wire_out
 TXN-000061,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-000062,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-000063,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
 TXN-000064,C004,NORMAL,,,Consistent with C004 profile: customs
+TXN-004817,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-000065,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-000066,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000067,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000068,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000069,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004818,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-000070,C002,NORMAL,,,Consistent with C002 profile: check
 TXN-000071,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-000072,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
@@ -87,6 +90,7 @@ TXN-000085,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-000086,C005,NORMAL,,,Consistent with C005 profile: ach_credit
 TXN-000087,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000088,C004,NORMAL,,,Consistent with C004 profile: customs
+TXN-004819,C002,NORMAL,,,Consistent with C002 profile: ach_credit
 TXN-000089,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-000090,C001,SUSPICIOUS,TM-01,SCN-C001-01,"Cash deposit 1/5 in a 7-day series of near-CTR deposits ($8,000-$9,999.99) at the home branch; series total exceeds $20,000 and far exceeds the ~$600-$1,800 typical deposit"
 TXN-000091,C004,NORMAL,,,Consistent with C004 profile: wire_in
@@ -94,6 +98,8 @@ TXN-000092,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
 TXN-000093,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000094,C002,NORMAL,,,Consistent with C002 profile: ach_debit
 TXN-000095,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
+TXN-004820,C004,NORMAL,,,Consistent with C004 profile: wire_in
+TXN-004821,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-000096,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-000097,C001,SUSPICIOUS,TM-01,SCN-C001-01,"Cash deposit 2/5 in a 7-day series of near-CTR deposits ($8,000-$9,999.99) at the home branch; series total exceeds $20,000 and far exceeds the ~$600-$1,800 typical deposit"
 TXN-000098,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
@@ -166,6 +172,7 @@ TXN-000164,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-000165,C002,NORMAL,,,Consistent with C002 profile: ach_debit
 TXN-000166,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-000167,C004,NORMAL,,,Consistent with C004 profile: customs
+TXN-004822,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-000168,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-000169,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-000170,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
@@ -189,6 +196,8 @@ TXN-000187,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
 TXN-000188,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-000189,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-000190,C004,NORMAL,,,Consistent with C004 profile: customs
+TXN-004823,C001,NORMAL,,,Consistent with C001 profile: ach_debit
+TXN-004824,C002,NORMAL,,,Consistent with C002 profile: ach_credit
 TXN-000191,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
 TXN-000192,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-000193,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
@@ -259,6 +268,7 @@ TXN-000257,C003,NORMAL,,,Consistent with C003 profile: wire_in
 TXN-000258,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-000259,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000260,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
+TXN-004825,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-000261,C002,NORMAL,,,Consistent with C002 profile: check
 TXN-000262,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000263,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
@@ -298,6 +308,7 @@ TXN-000296,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-000297,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000298,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-000299,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004826,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-000300,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000301,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-000302,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
@@ -359,6 +370,7 @@ TXN-000357,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000358,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-000359,C001,NORMAL,,,Consistent with C001 profile: check
 TXN-000360,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
+TXN-004827,C004,SUSPICIOUS,TM-09,SCN-C004-01,"Incoming international wire of $365,000.00 from Crescent Meridian General Trading FZE (AE), an unrelated third party with no known relationship to the customer; round amount, payment purpose and invoice reference missing, and AE is outside the expected countries; funds the round-dollar supplier wires in this scenario"
 TXN-000361,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000362,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-000363,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
@@ -370,6 +382,7 @@ TXN-000368,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000369,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-000370,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-000371,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
+TXN-004828,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-000372,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-000373,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000374,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
@@ -441,10 +454,12 @@ TXN-000439,C004,NORMAL,,,Consistent with C004 profile: wire_out
 TXN-000440,C004,NORMAL,,,Consistent with C004 profile: wire_out
 TXN-000441,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-000442,C003,NORMAL,,,Consistent with C003 profile: ach_debit
+TXN-004829,C002,NORMAL,,,Consistent with C002 profile: ach_credit
 TXN-000443,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-000444,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-000445,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-000446,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004830,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-000447,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-000448,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-000449,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
@@ -465,6 +480,7 @@ TXN-000463,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-000464,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-000465,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-000466,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
+TXN-004831,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-000467,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-000468,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-000469,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
@@ -473,6 +489,7 @@ TXN-000471,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000472,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-000473,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-000474,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
+TXN-004832,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-000475,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-000476,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-000477,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
@@ -490,6 +507,7 @@ TXN-000488,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-000489,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000490,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000491,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
+TXN-004833,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-000492,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-000493,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000494,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
@@ -510,6 +528,7 @@ TXN-000508,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000509,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-000510,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000511,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
+TXN-004834,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-000512,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-000513,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000514,C004,NORMAL,,,Consistent with C004 profile: freight
@@ -547,6 +566,7 @@ TXN-000545,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-000546,C005,NORMAL,,,Consistent with C005 profile: ach_debit
 TXN-000547,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-000548,C004,NORMAL,,,Consistent with C004 profile: wire_in
+TXN-004835,C004,SUSPICIOUS,TM-09,SCN-C004-01,"Incoming international wire of $340,000.00 from Lionsgate Harbor Holdings Pte. Ltd. (SG), an unrelated third party with no known relationship to the customer; round amount, payment purpose and invoice reference missing, and SG is outside the expected countries; funds the round-dollar supplier wires in this scenario"
 TXN-000549,C002,NORMAL,,,Consistent with C002 profile: ach_debit
 TXN-000550,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000551,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
@@ -604,6 +624,7 @@ TXN-000602,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-000603,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-000604,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000605,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
+TXN-004836,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-000606,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000607,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-000608,C002,NORMAL,,,Consistent with C002 profile: ach_debit
@@ -632,6 +653,7 @@ TXN-000630,C001,SUSPICIOUS,TM-01,SCN-C001-02,"Cash deposit 2/5 in a 7-day series
 TXN-000631,C002,SUSPICIOUS,TM-03,SCN-C002-01,"Sub-$10,000 cash deposit by an unidentified non-customer at an out-of-region branch (MN); account domiciled and operating in CA only; batch 2 of a 14-deposit multi-state funnel series"
 TXN-000632,C002,SUSPICIOUS,TM-03,SCN-C002-01,"Sub-$10,000 cash deposit by an unidentified non-customer at an out-of-region branch (MN); account domiciled and operating in CA only; batch 2 of a 14-deposit multi-state funnel series"
 TXN-000633,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
+TXN-004837,C002,NORMAL,,,Consistent with C002 profile: ach_credit
 TXN-000634,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
 TXN-000635,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-000636,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
@@ -647,6 +669,7 @@ TXN-000645,C005,NORMAL,,,Consistent with C005 profile: ach_debit
 TXN-000646,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-000647,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
 TXN-000648,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004838,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-000649,C003,NORMAL,,,Consistent with C003 profile: wire_in
 TXN-000650,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000651,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
@@ -667,6 +690,7 @@ TXN-000665,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000666,C001,SUSPICIOUS,TM-01,SCN-C001-02,"Cash deposit 4/5 in a 7-day series of near-CTR deposits ($8,000-$9,999.99) at the home branch; series total exceeds $20,000 and far exceeds the ~$600-$1,800 typical deposit"
 TXN-000667,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-000668,C004,SUSPICIOUS,TM-09,SCN-C004-01,"International wire 5/11 in a 90-day burst: whole-dollar round amount, payment-purpose and invoice reference missing; all 11 wires in this scenario are round, so round-wire share is 100%"
+TXN-004839,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-000669,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000670,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000671,C002,SUSPICIOUS,TM-04,SCN-C002-01,Rapid outflow: wire to a business ~25h after out-of-region cash batch 3; about 88-97% of the batch leaves within 72 hours
@@ -749,6 +773,7 @@ TXN-000747,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-000748,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-000749,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000750,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
+TXN-004840,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-000751,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-000752,C003,NORMAL,,,Consistent with C003 profile: wire_in
 TXN-000753,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
@@ -810,9 +835,11 @@ TXN-000808,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000809,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000810,C001,NORMAL,,,Consistent with C001 profile: check
 TXN-000811,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
+TXN-004841,C005,SUSPICIOUS,TM-08,SCN-C005-01,"Incoming wire of $48,500.00 from Northshore Atlas Ventures LLC, an unrelated party with no prior relationship; profile expects no incoming wires; arrives more than 3 days before the outgoing wires it funds, inside the short wire burst that follows 60+ quiet days"
 TXN-000812,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-000813,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-000814,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004842,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-000815,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-000816,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000817,C005,NORMAL,,,Consistent with C005 profile: ach_debit
@@ -824,6 +851,7 @@ TXN-000822,C003,NORMAL,,,Consistent with C003 profile: wire_in
 TXN-000823,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-000824,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-000825,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004843,C002,NORMAL,,,Consistent with C002 profile: ach_credit
 TXN-000826,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-000827,C003,NORMAL,,,Consistent with C003 profile: atm_withdrawal
 TXN-000828,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
@@ -847,6 +875,7 @@ TXN-000845,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
 TXN-000846,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-000847,C001,NORMAL,,,Consistent with C001 profile: check
 TXN-000848,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
+TXN-004844,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-000849,C002,NORMAL,,,Consistent with C002 profile: card_settlement
 TXN-000850,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000851,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
@@ -874,11 +903,13 @@ TXN-000872,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000873,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000874,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-000875,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004845,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-000876,C005,NORMAL,,,Consistent with C005 profile: ach_credit
 TXN-000877,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-000878,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-000879,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-000880,C001,NORMAL,,,Consistent with C001 profile: check
+TXN-004846,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-000881,C005,NORMAL,,,Consistent with C005 profile: ach_debit
 TXN-000882,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-000883,C002,NORMAL,,,Consistent with C002 profile: ach_debit
@@ -897,6 +928,7 @@ TXN-000895,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
 TXN-000896,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000897,C005,SUSPICIOUS,TM-08,SCN-C005-01,"Wire 1/9 in a short burst after 60+ quiet days with no wires; customer profile expects at most one wire per month up to $5,000; burst ends followed by 60+ quiet days"
 TXN-000898,C004,SUSPICIOUS,TM-09,SCN-C004-01,"International wire 10/11 in a 90-day burst: whole-dollar round amount, payment-purpose and invoice reference missing; all 11 wires in this scenario are round, so round-wire share is 100%"
+TXN-004847,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-000899,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-000900,C004,NORMAL,,,Consistent with C004 profile: wire_out
 TXN-000901,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
@@ -943,6 +975,7 @@ TXN-000941,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000942,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-000943,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000944,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
+TXN-004848,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-000945,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000946,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-000947,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
@@ -991,6 +1024,7 @@ TXN-000989,C005,NORMAL,,,Consistent with C005 profile: ach_debit
 TXN-000990,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-000991,C005,NORMAL,,,Consistent with C005 profile: ach_debit
 TXN-000992,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
+TXN-004849,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-000993,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000994,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-000995,C004,NORMAL,,,Consistent with C004 profile: customs
@@ -1026,6 +1060,7 @@ TXN-001024,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-001025,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
 TXN-001026,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-001027,C005,NORMAL,,,Consistent with C005 profile: atm_withdrawal
+TXN-004850,C002,NORMAL,,,Consistent with C002 profile: ach_credit
 TXN-001028,C001,SUSPICIOUS,TM-01,SCN-C001-03,"Cash deposit 1/5 in a 7-day series of near-CTR deposits ($8,000-$9,999.99) at the home branch; series total exceeds $20,000 and far exceeds the ~$600-$1,800 typical deposit"
 TXN-001029,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-001030,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
@@ -1121,9 +1156,11 @@ TXN-001119,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-001120,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-001121,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-001122,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
+TXN-004851,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-001123,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-001124,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-001125,C005,SUSPICIOUS,TM-08,SCN-C005-01,"Wire 6/9 in a short burst after 60+ quiet days with no wires; customer profile expects at most one wire per month up to $5,000; burst ends followed by 60+ quiet days"
+TXN-004852,C005,SUSPICIOUS,TM-08,SCN-C005-01,"Incoming wire of $31,750.00 from Northshore Atlas Ventures LLC, an unrelated party with no prior relationship; profile expects no incoming wires; arrives more than 3 days before the outgoing wires it funds, inside the short wire burst that follows 60+ quiet days"
 TXN-001126,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-001127,C001,NORMAL,,,Consistent with C001 profile: card_settlement
 TXN-001128,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
@@ -1172,6 +1209,7 @@ TXN-001170,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-001171,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-001172,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-001173,C004,NORMAL,,,Consistent with C004 profile: freight
+TXN-004853,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-001174,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-001175,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-001176,C005,SUSPICIOUS,TM-08,SCN-C005-01,"Wire 7/9 in a short burst after 60+ quiet days with no wires; customer profile expects at most one wire per month up to $5,000; burst ends followed by 60+ quiet days"
@@ -1188,6 +1226,7 @@ TXN-001186,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-001187,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-001188,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-001189,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
+TXN-004854,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-001190,C002,NORMAL,,,Consistent with C002 profile: check
 TXN-001191,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-001192,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
@@ -1252,6 +1291,8 @@ TXN-001250,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-001251,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-001252,C002,NORMAL,,,Consistent with C002 profile: check
 TXN-001253,C004,NORMAL,,,Consistent with C004 profile: customs
+TXN-004855,C001,NORMAL,,,Consistent with C001 profile: ach_debit
+TXN-004856,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-001254,C002,NORMAL,,,Consistent with C002 profile: ach_debit
 TXN-001255,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-001256,C004,NORMAL,,,Consistent with C004 profile: customs
@@ -1296,10 +1337,12 @@ TXN-001294,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-001295,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-001296,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-001297,C002,NORMAL,,,Consistent with C002 profile: ach_debit
+TXN-004857,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-001298,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-001299,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-001300,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-001301,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
+TXN-004858,C003,NORMAL,,,Consistent with C003 profile: ach_debit
 TXN-001302,C005,NORMAL,,,Consistent with C005 profile: atm_withdrawal
 TXN-001303,C002,NORMAL,,,Consistent with C002 profile: ach_debit
 TXN-001304,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
@@ -1334,15 +1377,18 @@ TXN-001332,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-001333,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-001334,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-001335,C004,NORMAL,,,Consistent with C004 profile: wire_in
+TXN-004859,C002,NORMAL,,,Consistent with C002 profile: ach_credit
 TXN-001336,C002,SUSPICIOUS,TM-03,SCN-C002-02,"Sub-$10,000 cash deposit by an unidentified non-customer at an out-of-region branch (TX); account domiciled and operating in CA only; batch 1 of a 14-deposit multi-state funnel series"
 TXN-001337,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-001338,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-001339,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-001340,C001,NORMAL,,,Consistent with C001 profile: ach_debit
+TXN-004860,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-001341,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-001342,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-001343,C005,NORMAL,,,Consistent with C005 profile: ach_debit
 TXN-001344,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004861,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-001345,C002,SUSPICIOUS,TM-03,SCN-C002-02,"Sub-$10,000 cash deposit by an unidentified non-customer at an out-of-region branch (IL); account domiciled and operating in CA only; batch 1 of a 14-deposit multi-state funnel series"
 TXN-001346,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-001347,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
@@ -1373,6 +1419,7 @@ TXN-001371,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-001372,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-001373,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-001374,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004862,C004,SUSPICIOUS,TM-09,SCN-C004-02,"Incoming international wire of $380,000.00 from Crescent Meridian General Trading FZE (AE), an unrelated third party with no known relationship to the customer; round amount, payment purpose and invoice reference missing, and AE is outside the expected countries; funds the round-dollar supplier wires in this scenario"
 TXN-001375,C002,NORMAL,,,Consistent with C002 profile: card_settlement
 TXN-001376,C001,NORMAL,,,Consistent with C001 profile: check
 TXN-001377,C002,SUSPICIOUS,TM-04,SCN-C002-02,Rapid outflow: wire to a business ~47h after out-of-region cash batch 1; about 88-97% of the batch leaves within 72 hours
@@ -1402,6 +1449,7 @@ TXN-001400,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-001401,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-001402,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-001403,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
+TXN-004863,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-001404,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-001405,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-001406,C002,NORMAL,,,Consistent with C002 profile: check
@@ -1480,6 +1528,7 @@ TXN-001478,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-001479,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-001480,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-001481,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004864,C004,SUSPICIOUS,TM-09,SCN-C004-02,"Incoming international wire of $360,000.00 from Valdora Commodities Ltd. (CY), an unrelated third party with no known relationship to the customer; round amount, payment purpose and invoice reference missing, and CY is outside the expected countries; funds the round-dollar supplier wires in this scenario"
 TXN-001482,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-001483,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-001484,C002,SUSPICIOUS,TM-03,SCN-C002-02,"Sub-$10,000 cash deposit by an unidentified non-customer at an out-of-region branch (IL); account domiciled and operating in CA only; batch 3 of a 14-deposit multi-state funnel series"
@@ -1494,6 +1543,7 @@ TXN-001492,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-001493,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-001494,C004,NORMAL,,,Consistent with C004 profile: wire_out
 TXN-001495,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
+TXN-004865,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-001496,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-001497,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-001498,C004,NORMAL,,,Consistent with C004 profile: freight
@@ -1568,6 +1618,7 @@ TXN-001566,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-001567,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-001568,C005,NORMAL,,,Consistent with C005 profile: ach_debit
 TXN-001569,C004,NORMAL,,,Consistent with C004 profile: wire_out
+TXN-004866,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-001570,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-001571,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-001572,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
@@ -1617,6 +1668,7 @@ TXN-001615,C005,NORMAL,,,Consistent with C005 profile: ach_debit
 TXN-001616,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-001617,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-001618,C002,NORMAL,,,Consistent with C002 profile: check
+TXN-004867,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-001619,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-001620,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-001621,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
@@ -1658,6 +1710,7 @@ TXN-001656,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-001657,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-001658,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-001659,C004,NORMAL,,,Consistent with C004 profile: freight
+TXN-004868,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-001660,C001,NORMAL,,,Consistent with C001 profile: card_settlement
 TXN-001661,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-001662,C004,SUSPICIOUS,TM-09,SCN-C004-02,"International wire 6/11 in a 90-day burst: whole-dollar round amount, payment-purpose and invoice reference missing; all 11 wires in this scenario are round, so round-wire share is 100%"
@@ -1670,12 +1723,14 @@ TXN-001668,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
 TXN-001669,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-001670,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-001671,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004869,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-001672,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-001673,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-001674,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-001675,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-001676,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-001677,C004,NORMAL,,,Consistent with C004 profile: freight
+TXN-004870,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-001678,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-001679,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-001680,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
@@ -1717,6 +1772,7 @@ TXN-001715,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-001716,C001,NORMAL,,,Consistent with C001 profile: check
 TXN-001717,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-001718,C001,NORMAL,,,Consistent with C001 profile: check
+TXN-004871,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-001719,C002,NORMAL,,,Consistent with C002 profile: ach_debit
 TXN-001720,C004,SUSPICIOUS,TM-09,SCN-C004-02,"International wire 7/11 in a 90-day burst: whole-dollar round amount, payment-purpose and invoice reference missing; all 11 wires in this scenario are round, so round-wire share is 100%"
 TXN-001721,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
@@ -1834,6 +1890,7 @@ TXN-001832,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-001833,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-001834,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-001835,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004872,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-001836,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-001837,C001,SUSPICIOUS,TM-01,SCN-C001-05,"Cash deposit 5/5 in a 7-day series of near-CTR deposits ($8,000-$9,999.99) at the home branch; series total exceeds $20,000 and far exceeds the ~$600-$1,800 typical deposit"
 TXN-001838,C004,SUSPICIOUS,TM-09,SCN-C004-02,"International wire 9/11 in a 90-day burst: whole-dollar round amount, payment-purpose and invoice reference missing; all 11 wires in this scenario are round, so round-wire share is 100%"
@@ -1869,12 +1926,14 @@ TXN-001867,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-001868,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-001869,C004,NORMAL,,,Consistent with C004 profile: wire_out
 TXN-001870,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004873,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-001871,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-001872,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-001873,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-001874,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
 TXN-001875,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-001876,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004874,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-001877,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-001878,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-001879,C004,SUSPICIOUS,TM-09,SCN-C004-02,"International wire 10/11 in a 90-day burst: whole-dollar round amount, payment-purpose and invoice reference missing; all 11 wires in this scenario are round, so round-wire share is 100%"
@@ -1943,6 +2002,7 @@ TXN-001941,C004,SUSPICIOUS,TM-09,SCN-C004-02,"International wire 11/11 in a 90-d
 TXN-001942,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-001943,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-001944,C004,NORMAL,,,Consistent with C004 profile: ach_credit
+TXN-004875,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-001945,C005,NORMAL,,,Consistent with C005 profile: ach_debit
 TXN-001946,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-001947,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
@@ -2057,6 +2117,7 @@ TXN-002055,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002056,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-002057,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002058,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004876,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-002059,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-002060,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002061,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
@@ -2070,7 +2131,10 @@ TXN-002068,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-002069,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002070,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-002071,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004877,C001,NORMAL,,,Consistent with C001 profile: ach_debit
+TXN-004878,C002,NORMAL,,,Consistent with C002 profile: ach_credit
 TXN-002072,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
+TXN-004879,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-002073,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002074,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-002075,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
@@ -2107,6 +2171,7 @@ TXN-002105,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002106,C002,NORMAL,,,Consistent with C002 profile: ach_debit
 TXN-002107,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-002108,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004880,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-002109,C002,SUSPICIOUS,TM-03,SCN-C002-03,"Sub-$10,000 cash deposit by an unidentified non-customer at an out-of-region branch (TX); account domiciled and operating in CA only; batch 2 of a 14-deposit multi-state funnel series"
 TXN-002110,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-002111,C001,SUSPICIOUS,TM-01,SCN-C001-06,"Cash deposit 2/5 in a 7-day series of near-CTR deposits ($8,000-$9,999.99) at the home branch; series total exceeds $20,000 and far exceeds the ~$600-$1,800 typical deposit"
@@ -2140,6 +2205,7 @@ TXN-002138,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002139,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002140,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-002141,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004881,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-002142,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-002143,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002144,C002,SUSPICIOUS,TM-03,SCN-C002-03,"Sub-$10,000 cash deposit by an unidentified non-customer at an out-of-region branch (IL); account domiciled and operating in CA only; batch 2 of a 14-deposit multi-state funnel series"
@@ -2239,6 +2305,7 @@ TXN-002237,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-002238,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-002239,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002240,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004882,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-002241,C002,NORMAL,,,Consistent with C002 profile: ach_debit
 TXN-002242,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-002243,C005,NORMAL,,,Consistent with C005 profile: ach_debit
@@ -2246,6 +2313,7 @@ TXN-002244,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-002245,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-002246,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002247,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
+TXN-004883,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-002248,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002249,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-002250,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
@@ -2331,6 +2399,7 @@ TXN-002329,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
 TXN-002330,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-002331,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002332,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004884,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-002333,C003,NORMAL,,,Consistent with C003 profile: ach_debit
 TXN-002334,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-002335,C003,NORMAL,,,Consistent with C003 profile: atm_withdrawal
@@ -2404,6 +2473,7 @@ TXN-002402,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-002403,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-002404,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-002405,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004885,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-002406,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-002407,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-002408,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
@@ -2423,6 +2493,7 @@ TXN-002421,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-002422,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-002423,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-002424,C004,NORMAL,,,Consistent with C004 profile: wire_out
+TXN-004886,C004,SUSPICIOUS,TM-09,SCN-C004-03,"Incoming international wire of $375,000.00 from Lionsgate Harbor Holdings Pte. Ltd. (SG), an unrelated third party with no known relationship to the customer; round amount, payment purpose and invoice reference missing, and SG is outside the expected countries; funds the round-dollar supplier wires in this scenario"
 TXN-002425,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002426,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002427,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
@@ -2458,6 +2529,7 @@ TXN-002456,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002457,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-002458,C003,NORMAL,,,Consistent with C003 profile: ach_debit
 TXN-002459,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
+TXN-004887,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-002460,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
 TXN-002461,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-002462,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
@@ -2490,6 +2562,7 @@ TXN-002488,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-002489,C005,NORMAL,,,Consistent with C005 profile: ach_debit
 TXN-002490,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-002491,C004,NORMAL,,,Consistent with C004 profile: customs
+TXN-004888,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-002492,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-002493,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-002494,C004,NORMAL,,,Consistent with C004 profile: customs
@@ -2501,6 +2574,7 @@ TXN-002499,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-002500,C003,SUSPICIOUS,TM-07,SCN-C003-02,"Incoming wire of $6,615.17 (>= $5,000) from a known client; pass-through leg 1/3"
 TXN-002501,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-002502,C002,NORMAL,,,Consistent with C002 profile: ach_debit
+TXN-004889,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-002503,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-002504,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-002505,C004,SUSPICIOUS,TM-09,SCN-C004-03,"International wire 1/11 in a 90-day burst: whole-dollar round amount, payment-purpose and invoice reference missing; all 11 wires in this scenario are round, so round-wire share is 100%"
@@ -2534,11 +2608,14 @@ TXN-002532,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
 TXN-002533,C001,NORMAL,,,Consistent with C001 profile: card_settlement
 TXN-002534,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-002535,C003,NORMAL,,,Consistent with C003 profile: wire_in
+TXN-004890,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-002536,C005,NORMAL,,,Consistent with C005 profile: ach_debit
 TXN-002537,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002538,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004891,C003,NORMAL,,,Consistent with C003 profile: ach_debit
 TXN-002539,C002,NORMAL,,,Consistent with C002 profile: ach_debit
 TXN-002540,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004892,C002,NORMAL,,,Consistent with C002 profile: ach_credit
 TXN-002541,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002542,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002543,C002,NORMAL,,,Consistent with C002 profile: check
@@ -2599,6 +2676,7 @@ TXN-002597,C001,NORMAL,,,Consistent with C001 profile: card_settlement
 TXN-002598,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-002599,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002600,C004,NORMAL,,,Consistent with C004 profile: wire_out
+TXN-004893,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-002601,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-002602,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002603,C004,NORMAL,,,Consistent with C004 profile: ach_credit
@@ -2614,6 +2692,7 @@ TXN-002612,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
 TXN-002613,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-002614,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002615,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004894,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-002616,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-002617,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-002618,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
@@ -2666,6 +2745,7 @@ TXN-002664,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002665,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002666,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-002667,C004,SUSPICIOUS,TM-09,SCN-C004-03,"International wire 5/11 in a 90-day burst: whole-dollar round amount, payment-purpose and invoice reference missing; all 11 wires in this scenario are round, so round-wire share is 100%"
+TXN-004895,C004,SUSPICIOUS,TM-09,SCN-C004-03,"Incoming international wire of $350,000.00 from Tanjong Pearl Resources Sdn. Bhd. (MY), an unrelated third party with no known relationship to the customer; round amount, payment purpose and invoice reference missing, and MY is outside the expected countries; funds the round-dollar supplier wires in this scenario"
 TXN-002668,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002669,C001,SUSPICIOUS,TM-01,SCN-C001-07,"Cash deposit 3/5 in a 7-day series of near-CTR deposits ($8,000-$9,999.99) at the home branch; series total exceeds $20,000 and far exceeds the ~$600-$1,800 typical deposit"
 TXN-002670,C003,SUSPICIOUS,TM-07,SCN-C003-02,"Incoming wire of $6,157.66 (>= $5,000) from a known client; pass-through leg 3/3"
@@ -2676,6 +2756,7 @@ TXN-002674,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-002675,C002,NORMAL,,,Consistent with C002 profile: check
 TXN-002676,C001,SUSPICIOUS,TM-01,SCN-C001-07,"Cash deposit 2/5 in a 7-day series of near-CTR deposits ($8,000-$9,999.99) at the home branch; series total exceeds $20,000 and far exceeds the ~$600-$1,800 typical deposit"
 TXN-002677,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
+TXN-004896,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-002678,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-002679,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-002680,C004,NORMAL,,,Consistent with C004 profile: wire_out
@@ -2718,6 +2799,7 @@ TXN-002716,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-002717,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-002718,C001,SUSPICIOUS,TM-01,SCN-C001-07,"Cash deposit 5/5 in a 7-day series of near-CTR deposits ($8,000-$9,999.99) at the home branch; series total exceeds $20,000 and far exceeds the ~$600-$1,800 typical deposit"
 TXN-002719,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004897,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-002720,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
 TXN-002721,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002722,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
@@ -2737,6 +2819,7 @@ TXN-002735,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-002736,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-002737,C005,NORMAL,,,Consistent with C005 profile: ach_debit
 TXN-002738,C001,NORMAL,,,Consistent with C001 profile: check
+TXN-004898,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-002739,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002740,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002741,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
@@ -2764,11 +2847,13 @@ TXN-002762,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002763,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-002764,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002765,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
+TXN-004899,C002,NORMAL,,,Consistent with C002 profile: ach_credit
 TXN-002766,C004,NORMAL,,,Consistent with C004 profile: wire_out
 TXN-002767,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-002768,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002769,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002770,C005,NORMAL,,,Consistent with C005 profile: ach_debit
+TXN-004900,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-002771,C004,SUSPICIOUS,TM-09,SCN-C004-03,"International wire 7/11 in a 90-day burst: whole-dollar round amount, payment-purpose and invoice reference missing; all 11 wires in this scenario are round, so round-wire share is 100%"
 TXN-002772,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-002773,C004,NORMAL,,,Consistent with C004 profile: customs
@@ -2826,6 +2911,7 @@ TXN-002824,C005,NORMAL,,,Consistent with C005 profile: atm_withdrawal
 TXN-002825,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002826,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002827,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004901,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-002828,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-002829,C004,SUSPICIOUS,TM-09,SCN-C004-03,"International wire 9/11 in a 90-day burst: whole-dollar round amount, payment-purpose and invoice reference missing; all 11 wires in this scenario are round, so round-wire share is 100%"
 TXN-002830,C002,NORMAL,,,Consistent with C002 profile: check
@@ -2858,6 +2944,7 @@ TXN-002856,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-002857,C002,NORMAL,,,Consistent with C002 profile: card_settlement
 TXN-002858,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-002859,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004902,C002,NORMAL,,,Consistent with C002 profile: ach_credit
 TXN-002860,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-002861,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-002862,C001,NORMAL,,,Consistent with C001 profile: ach_debit
@@ -2878,6 +2965,7 @@ TXN-002876,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-002877,C002,SUSPICIOUS,TM-03,SCN-C002-04,"Sub-$10,000 cash deposit by an unidentified non-customer at an out-of-region branch (MN); account domiciled and operating in CA only; batch 1 of a 14-deposit multi-state funnel series"
 TXN-002878,C002,NORMAL,,,Consistent with C002 profile: check
 TXN-002879,C004,SUSPICIOUS,TM-09,SCN-C004-03,"International wire 10/11 in a 90-day burst: whole-dollar round amount, payment-purpose and invoice reference missing; all 11 wires in this scenario are round, so round-wire share is 100%"
+TXN-004903,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-002880,C003,NORMAL,,,Consistent with C003 profile: check
 TXN-002881,C002,NORMAL,,,Consistent with C002 profile: check
 TXN-002882,C004,NORMAL,,,Consistent with C004 profile: customs
@@ -2919,6 +3007,7 @@ TXN-002917,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002918,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-002919,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-002920,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004904,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-002921,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-002922,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-002923,C002,NORMAL,,,Consistent with C002 profile: ach_debit
@@ -2961,8 +3050,10 @@ TXN-002959,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-002960,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-002961,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-002962,C002,NORMAL,,,Consistent with C002 profile: ach_debit
+TXN-004905,C002,NORMAL,,,Consistent with C002 profile: ach_credit
 TXN-002963,C002,SUSPICIOUS,TM-03,SCN-C002-04,"Sub-$10,000 cash deposit by an unidentified non-customer at an out-of-region branch (IL); account domiciled and operating in CA only; batch 2 of a 14-deposit multi-state funnel series"
 TXN-002964,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
+TXN-004906,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-002965,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-002966,C004,NORMAL,,,Consistent with C004 profile: wire_out
 TXN-002967,C004,NORMAL,,,Consistent with C004 profile: freight
@@ -3004,6 +3095,7 @@ TXN-003002,C001,SUSPICIOUS,TM-01,SCN-C001-08,"Cash deposit 2/5 in a 7-day series
 TXN-003003,C002,NORMAL,,,Consistent with C002 profile: check
 TXN-003004,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003005,C002,SUSPICIOUS,TM-03,SCN-C002-04,"Sub-$10,000 cash deposit by an unidentified non-customer at an out-of-region branch (IL); account domiciled and operating in CA only; batch 3 of a 14-deposit multi-state funnel series"
+TXN-004907,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-003006,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-003007,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003008,C004,NORMAL,,,Consistent with C004 profile: wire_in
@@ -3015,6 +3107,7 @@ TXN-003013,C001,SUSPICIOUS,TM-01,SCN-C001-08,"Cash deposit 3/5 in a 7-day series
 TXN-003014,C002,SUSPICIOUS,TM-03,SCN-C002-04,"Sub-$10,000 cash deposit by an unidentified non-customer at an out-of-region branch (MN); account domiciled and operating in CA only; batch 3 of a 14-deposit multi-state funnel series"
 TXN-003015,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-003016,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004908,C002,NORMAL,,,Consistent with C002 profile: ach_credit
 TXN-003017,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-003018,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-003019,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
@@ -3073,6 +3166,7 @@ TXN-003071,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-003072,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003073,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003074,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
+TXN-004909,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-003075,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-003076,C002,NORMAL,,,Consistent with C002 profile: check
 TXN-003077,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
@@ -3122,6 +3216,7 @@ TXN-003120,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-003121,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-003122,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003123,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
+TXN-004910,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-003124,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-003125,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003126,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
@@ -3249,12 +3344,15 @@ TXN-003247,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-003248,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
 TXN-003249,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003250,C004,NORMAL,,,Consistent with C004 profile: wire_out
+TXN-004911,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-003251,C002,NORMAL,,,Consistent with C002 profile: ach_debit
 TXN-003252,C004,NORMAL,,,Consistent with C004 profile: freight
+TXN-004912,C002,NORMAL,,,Consistent with C002 profile: ach_credit
 TXN-003253,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-003254,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-003255,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003256,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004913,C005,SUSPICIOUS,TM-08,SCN-C005-02,"Incoming wire of $46,800.00 from Rafael Castellanos-Imrie, an unrelated party with no prior relationship; profile expects no incoming wires; arrives more than 3 days before the outgoing wires it funds, inside the short wire burst that follows 60+ quiet days"
 TXN-003257,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
 TXN-003258,C002,NORMAL,,,Consistent with C002 profile: check
 TXN-003259,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
@@ -3279,11 +3377,13 @@ TXN-003277,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-003278,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
 TXN-003279,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003280,C004,NORMAL,,,Consistent with C004 profile: freight
+TXN-004914,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-003281,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-003282,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-003283,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-003284,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-003285,C004,NORMAL,,,Consistent with C004 profile: customs
+TXN-004915,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-003286,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-003287,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003288,C004,NORMAL,,,Consistent with C004 profile: customs
@@ -3317,11 +3417,15 @@ TXN-003315,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-003316,C002,NORMAL,,,Consistent with C002 profile: ach_debit
 TXN-003317,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-003318,C004,NORMAL,,,Consistent with C004 profile: customs
+TXN-004916,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-003319,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003320,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003321,C005,SUSPICIOUS,TM-08,SCN-C005-02,"Wire 1/10 in a short burst after 60+ quiet days with no wires; customer profile expects at most one wire per month up to $5,000; burst ends followed by 60+ quiet days"
 TXN-003322,C004,NORMAL,,,Consistent with C004 profile: customs
+TXN-004917,C001,NORMAL,,,Consistent with C001 profile: ach_debit
+TXN-004918,C003,NORMAL,,,Consistent with C003 profile: ach_debit
 TXN-003323,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004919,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-003324,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-003325,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-003326,C004,NORMAL,,,Consistent with C004 profile: freight
@@ -3334,6 +3438,7 @@ TXN-003332,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-003333,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-003334,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-003335,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004920,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-003336,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003337,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003338,C004,NORMAL,,,Consistent with C004 profile: ach_credit
@@ -3435,6 +3540,7 @@ TXN-003433,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003434,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003435,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-003436,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004921,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-003437,C002,NORMAL,,,Consistent with C002 profile: ach_debit
 TXN-003438,C001,NORMAL,,,Consistent with C001 profile: check
 TXN-003439,C001,NORMAL,,,Consistent with C001 profile: ach_debit
@@ -3515,6 +3621,7 @@ TXN-003513,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-003514,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-003515,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-003516,C005,SUSPICIOUS,TM-08,SCN-C005-02,"Wire 5/10 in a short burst after 60+ quiet days with no wires; customer profile expects at most one wire per month up to $5,000; burst ends followed by 60+ quiet days"
+TXN-004922,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-003517,C001,NORMAL,,,Consistent with C001 profile: card_settlement
 TXN-003518,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003519,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
@@ -3530,7 +3637,9 @@ TXN-003528,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-003529,C001,NORMAL,,,Consistent with C001 profile: check
 TXN-003530,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003531,C005,NORMAL,,,Consistent with C005 profile: ach_debit
+TXN-004923,C005,SUSPICIOUS,TM-08,SCN-C005-02,"Incoming wire of $50,250.00 from Rafael Castellanos-Imrie, an unrelated party with no prior relationship; profile expects no incoming wires; arrives more than 3 days before the outgoing wires it funds, inside the short wire burst that follows 60+ quiet days"
 TXN-003532,C002,NORMAL,,,Consistent with C002 profile: ach_debit
+TXN-004924,C004,SUSPICIOUS,TM-09,SCN-C004-04,"Incoming international wire of $430,000.00 from Valdora Commodities Ltd. (CY), an unrelated third party with no known relationship to the customer; round amount, payment purpose and invoice reference missing, and CY is outside the expected countries; funds the round-dollar supplier wires in this scenario"
 TXN-003533,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-003534,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003535,C002,NORMAL,,,Consistent with C002 profile: ach_debit
@@ -3559,6 +3668,7 @@ TXN-003557,C004,NORMAL,,,Consistent with C004 profile: wire_out
 TXN-003558,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-003559,C004,NORMAL,,,Consistent with C004 profile: wire_out
 TXN-003560,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
+TXN-004925,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-003561,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-003562,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-003563,C001,NORMAL,,,Consistent with C001 profile: ach_debit
@@ -3605,6 +3715,7 @@ TXN-003603,C004,NORMAL,,,Consistent with C004 profile: wire_out
 TXN-003604,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-003605,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003606,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004926,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-003607,C002,NORMAL,,,Consistent with C002 profile: check
 TXN-003608,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003609,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
@@ -3659,6 +3770,7 @@ TXN-003657,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-003658,C001,NORMAL,,,Consistent with C001 profile: check
 TXN-003659,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-003660,C004,NORMAL,,,Consistent with C004 profile: freight
+TXN-004927,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-003661,C003,NORMAL,,,Consistent with C003 profile: ach_debit
 TXN-003662,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-003663,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
@@ -3695,6 +3807,7 @@ TXN-003693,C005,NORMAL,,,Consistent with C005 profile: ach_debit
 TXN-003694,C003,NORMAL,,,Consistent with C003 profile: wire_in
 TXN-003695,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-003696,C004,NORMAL,,,Consistent with C004 profile: customs
+TXN-004928,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-003697,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-003698,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
 TXN-003699,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
@@ -3714,6 +3827,7 @@ TXN-003712,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-003713,C002,NORMAL,,,Consistent with C002 profile: ach_debit
 TXN-003714,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-003715,C001,NORMAL,,,Consistent with C001 profile: check
+TXN-004929,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-003716,C005,NORMAL,,,Consistent with C005 profile: ach_credit
 TXN-003717,C001,NORMAL,,,Consistent with C001 profile: check
 TXN-003718,C003,SUSPICIOUS,TM-07,SCN-C003-03,"Outgoing wire of $5,782.66 within 1.4 days and 2.3% of the matching incoming wire; outbound to a different business than the payer"
@@ -3726,6 +3840,7 @@ TXN-003724,C005,NORMAL,,,Consistent with C005 profile: ach_debit
 TXN-003725,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-003726,C002,NORMAL,,,Consistent with C002 profile: ach_debit
 TXN-003727,C003,NORMAL,,,Consistent with C003 profile: atm_withdrawal
+TXN-004930,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-003728,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003729,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-003730,C004,NORMAL,,,Consistent with C004 profile: wire_out
@@ -3781,6 +3896,7 @@ TXN-003779,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-003780,C003,NORMAL,,,Consistent with C003 profile: atm_withdrawal
 TXN-003781,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003782,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004931,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-003783,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-003784,C001,NORMAL,,,Consistent with C001 profile: card_settlement
 TXN-003785,C002,NORMAL,,,Consistent with C002 profile: card_settlement
@@ -3816,6 +3932,7 @@ TXN-003814,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003815,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003816,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003817,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
+TXN-004932,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-003818,C004,SUSPICIOUS,TM-09,SCN-C004-04,"International wire 6/11 in a 90-day burst: whole-dollar round amount, payment-purpose and invoice reference missing; all 11 wires in this scenario are round, so round-wire share is 100%"
 TXN-003819,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-003820,C003,SUSPICIOUS,TM-07,SCN-C003-03,"Outgoing wire of $7,801.30 within 1.1 days and 2.9% of the matching incoming wire; outbound to a different business than the payer"
@@ -3900,6 +4017,7 @@ TXN-003898,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-003899,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-003900,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-003901,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004933,C004,SUSPICIOUS,TM-09,SCN-C004-04,"Incoming international wire of $415,000.00 from Crescent Meridian General Trading FZE (AE), an unrelated third party with no known relationship to the customer; round amount, payment purpose and invoice reference missing, and AE is outside the expected countries; funds the round-dollar supplier wires in this scenario"
 TXN-003902,C001,NORMAL,,,Consistent with C001 profile: check
 TXN-003903,C001,NORMAL,,,Consistent with C001 profile: check
 TXN-003904,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
@@ -3924,6 +4042,7 @@ TXN-003922,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003923,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-003924,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-003925,C004,NORMAL,,,Consistent with C004 profile: ach_credit
+TXN-004934,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-003926,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-003927,C005,NORMAL,,,Consistent with C005 profile: atm_withdrawal
 TXN-003928,C002,NORMAL,,,Consistent with C002 profile: check
@@ -3960,6 +4079,7 @@ TXN-003958,C005,NORMAL,,,Consistent with C005 profile: ach_debit
 TXN-003959,C003,SUSPICIOUS,TM-07,SCN-C003-03,"Incoming wire of $7,241.99 (>= $5,000) from a known client; pass-through leg 3/4"
 TXN-003960,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-003961,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
+TXN-004935,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-003962,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-003963,C004,SUSPICIOUS,TM-09,SCN-C004-04,"International wire 9/11 in a 90-day burst: whole-dollar round amount, payment-purpose and invoice reference missing; all 11 wires in this scenario are round, so round-wire share is 100%"
 TXN-003964,C004,NORMAL,,,Consistent with C004 profile: customs
@@ -4042,6 +4162,7 @@ TXN-004040,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
 TXN-004041,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-004042,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-004043,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
+TXN-004936,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-004044,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-004045,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-004046,C001,NORMAL,,,Consistent with C001 profile: card_settlement
@@ -4084,7 +4205,9 @@ TXN-004082,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-004083,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
 TXN-004084,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-004085,C004,NORMAL,,,Consistent with C004 profile: customs
+TXN-004937,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-004086,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004938,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-004087,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-004088,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-004089,C004,NORMAL,,,Consistent with C004 profile: freight
@@ -4105,6 +4228,8 @@ TXN-004103,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-004104,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-004105,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-004106,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004939,C001,NORMAL,,,Consistent with C001 profile: ach_debit
+TXN-004940,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-004107,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-004108,C005,NORMAL,,,Consistent with C005 profile: ach_credit
 TXN-004109,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
@@ -4132,6 +4257,7 @@ TXN-004130,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-004131,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-004132,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
 TXN-004133,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004941,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-004134,C001,NORMAL,,,Consistent with C001 profile: card_settlement
 TXN-004135,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-004136,C005,NORMAL,,,Consistent with C005 profile: ach_debit
@@ -4270,6 +4396,7 @@ TXN-004268,C002,NORMAL,,,Consistent with C002 profile: ach_debit
 TXN-004269,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-004270,C002,SUSPICIOUS,TM-03,SCN-C002-05,"Sub-$10,000 cash deposit by an unidentified non-customer at an out-of-region branch (IN); account domiciled and operating in CA only; batch 3 of a 14-deposit multi-state funnel series"
 TXN-004271,C005,NORMAL,,,Consistent with C005 profile: atm_withdrawal
+TXN-004942,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-004272,C002,SUSPICIOUS,TM-03,SCN-C002-05,"Sub-$10,000 cash deposit by an unidentified non-customer at an out-of-region branch (IL); account domiciled and operating in CA only; batch 3 of a 14-deposit multi-state funnel series"
 TXN-004273,C003,NORMAL,,,Consistent with C003 profile: ach_credit
 TXN-004274,C002,SUSPICIOUS,TM-04,SCN-C002-05,Rapid outflow: wire to a business ~43h after out-of-region cash batch 2; about 88-97% of the batch leaves within 72 hours
@@ -4348,6 +4475,7 @@ TXN-004346,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-004347,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-004348,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-004349,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
+TXN-004943,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-004350,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-004351,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-004352,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
@@ -4386,6 +4514,7 @@ TXN-004384,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-004385,C002,NORMAL,,,Consistent with C002 profile: ach_debit
 TXN-004386,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-004387,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
+TXN-004944,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-004388,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-004389,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-004390,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
@@ -4437,6 +4566,7 @@ TXN-004435,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-004436,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-004437,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-004438,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
+TXN-004945,C002,NORMAL,,,Consistent with C002 profile: ach_credit
 TXN-004439,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-004440,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-004441,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
@@ -4466,6 +4596,7 @@ TXN-004464,C002,NORMAL,,,Consistent with C002 profile: ach_debit
 TXN-004465,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-004466,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-004467,C002,NORMAL,,,Consistent with C002 profile: ach_debit
+TXN-004946,C004,NORMAL,,,Consistent with C004 profile: ach_credit
 TXN-004468,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-004469,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-004470,C004,NORMAL,,,Consistent with C004 profile: wire_out
@@ -4491,6 +4622,7 @@ TXN-004489,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-004490,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-004491,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-004492,C004,NORMAL,,,Consistent with C004 profile: wire_out
+TXN-004947,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-004493,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-004494,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-004495,C004,NORMAL,,,Consistent with C004 profile: customs
@@ -4532,6 +4664,7 @@ TXN-004530,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-004531,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-004532,C005,NORMAL,,,Consistent with C005 profile: ach_debit
 TXN-004533,C001,NORMAL,,,Consistent with C001 profile: card_settlement
+TXN-004948,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-004534,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-004535,C002,NORMAL,,,Consistent with C002 profile: check
 TXN-004536,C004,NORMAL,,,Consistent with C004 profile: freight
@@ -4546,14 +4679,17 @@ TXN-004544,C002,NORMAL,,,Consistent with C002 profile: ach_debit
 TXN-004545,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-004546,C002,NORMAL,,,Consistent with C002 profile: check
 TXN-004547,C003,NORMAL,,,Consistent with C003 profile: atm_withdrawal
+TXN-004949,C003,NORMAL,,,Consistent with C003 profile: ach_debit
 TXN-004548,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-004549,C001,SUSPICIOUS,TM-01,SCN-C001-12,"Cash deposit 1/5 in a 7-day series of near-CTR deposits ($8,000-$9,999.99) at the home branch; series total exceeds $20,000 and far exceeds the ~$600-$1,800 typical deposit"
 TXN-004550,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
+TXN-004950,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-004551,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-004552,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-004553,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-004554,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-004555,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
+TXN-004951,C002,NORMAL,,,Consistent with C002 profile: ach_credit
 TXN-004556,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
 TXN-004557,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-004558,C004,NORMAL,,,Consistent with C004 profile: customs
@@ -4619,10 +4755,12 @@ TXN-004617,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-004618,C002,NORMAL,,,Consistent with C002 profile: card_settlement
 TXN-004619,C002,NORMAL,,,Consistent with C002 profile: cash_deposit
 TXN-004620,C001,SUSPICIOUS,TM-01,SCN-C001-12,"Cash deposit 5/5 in a 7-day series of near-CTR deposits ($8,000-$9,999.99) at the home branch; series total exceeds $20,000 and far exceeds the ~$600-$1,800 typical deposit"
+TXN-004952,C004,NORMAL,,,Consistent with C004 profile: wire_in
 TXN-004621,C005,NORMAL,,,Consistent with C005 profile: ach_debit
 TXN-004622,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-004623,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-004624,C004,NORMAL,,,Consistent with C004 profile: freight
+TXN-004953,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-004625,C002,NORMAL,,,Consistent with C002 profile: ach_debit
 TXN-004626,C003,NORMAL,,,Consistent with C003 profile: wire_in
 TXN-004627,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
@@ -4703,6 +4841,8 @@ TXN-004701,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-004702,C003,NORMAL,,,Consistent with C003 profile: debit_card_purchase
 TXN-004703,C004,NORMAL,,,Consistent with C004 profile: customs
 TXN-004704,C004,NORMAL,,,Consistent with C004 profile: freight
+TXN-004954,C004,NORMAL,,,Consistent with C004 profile: wire_in
+TXN-004955,C002,NORMAL,,,Consistent with C002 profile: ach_credit
 TXN-004705,C004,NORMAL,,,Consistent with C004 profile: wire_out
 TXN-004706,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-004707,C002,NORMAL,,,Consistent with C002 profile: check
@@ -4725,6 +4865,7 @@ TXN-004723,C004,NORMAL,,,Consistent with C004 profile: freight
 TXN-004724,C002,NORMAL,,,Consistent with C002 profile: debit_card_purchase
 TXN-004725,C005,NORMAL,,,Consistent with C005 profile: atm_withdrawal
 TXN-004726,C005,NORMAL,,,Consistent with C005 profile: debit_card_purchase
+TXN-004956,C001,NORMAL,,,Consistent with C001 profile: ach_debit
 TXN-004727,C001,NORMAL,,,Consistent with C001 profile: cash_deposit
 TXN-004728,C001,NORMAL,,,Consistent with C001 profile: debit_card_purchase
 TXN-004729,C004,NORMAL,,,Consistent with C004 profile: ach_credit
