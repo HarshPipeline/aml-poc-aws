@@ -79,7 +79,36 @@
       "assigned_pattern_ids": [
         "TM-01"
       ],
-      "normal_behavior_summary": "Regular register-cash deposits and card settlements; payments to suppliers, rent, utilities, payroll, and insurance."
+      "normal_behavior_summary": "Regular register-cash deposits and card settlements; payments to suppliers, rent, utilities, payroll, and insurance.",
+      "kyc_profile": {
+        "entity_type": "LLC",
+        "date_of_incorporation": "2019-05-02",
+        "tax_id_masked": "SYNTH-EIN-XX-XXX0001",
+        "registered_address": "SYNTH 100 Example St, Sunnyvale, CA 94000",
+        "id_verification": {
+          "document_type": "ARTICLES_OF_ORGANIZATION",
+          "verified": true,
+          "verified_date": "2019-06-18"
+        },
+        "beneficial_owners": [
+          {
+            "name": "Marcus Delgado-Whitfield",
+            "ownership_percent": 100,
+            "date_of_birth": "1978-03-14",
+            "id_document_type": "DRIVERS_LICENSE",
+            "id_verified": true
+          }
+        ],
+        "source_of_funds": "Retail sales (cash and card)",
+        "cash_intensive_business": true,
+        "pep_flag": false,
+        "sanctions_screening": {
+          "status": "CLEAR",
+          "last_screening_date": "2026-09-30"
+        },
+        "kyc_last_review_date": "2025-06-18",
+        "kyc_next_review_date": "2027-06-18"
+      }
     },
     {
       "customer_id": "C002",
@@ -156,7 +185,36 @@
         "TM-03",
         "TM-04"
       ],
-      "normal_behavior_summary": "Local restaurant cash deposits and card settlements; supplier, payroll, rent, tax, utility, and equipment payments are handled directly through one operating checking account."
+      "normal_behavior_summary": "Local restaurant cash deposits and card settlements; supplier, payroll, rent, tax, utility, and equipment payments are handled directly through one operating checking account.",
+      "kyc_profile": {
+        "entity_type": "CORPORATION",
+        "date_of_incorporation": "2019-11-04",
+        "tax_id_masked": "SYNTH-EIN-XX-XXX0002",
+        "registered_address": "SYNTH 200 Example Ave, San Jose, CA 95000",
+        "id_verification": {
+          "document_type": "ARTICLES_OF_INCORPORATION",
+          "verified": true,
+          "verified_date": "2020-02-10"
+        },
+        "beneficial_owners": [
+          {
+            "name": "Elena Marisol Quintanilla-Hayes",
+            "ownership_percent": 100,
+            "date_of_birth": "1983-08-22",
+            "id_document_type": "DRIVERS_LICENSE",
+            "id_verified": true
+          }
+        ],
+        "source_of_funds": "Restaurant sales (dine-in, takeout, and catering)",
+        "cash_intensive_business": true,
+        "pep_flag": false,
+        "sanctions_screening": {
+          "status": "CLEAR",
+          "last_screening_date": "2026-09-30"
+        },
+        "kyc_last_review_date": "2026-02-10",
+        "kyc_next_review_date": "2028-02-10"
+      }
     },
     {
       "customer_id": "C003",
@@ -226,7 +284,26 @@
       "assigned_pattern_ids": [
         "TM-07"
       ],
-      "normal_behavior_summary": "ACH and occasional incoming domestic-wire consulting payments followed by ordinary professional and personal expenses."
+      "normal_behavior_summary": "ACH and occasional incoming domestic-wire consulting payments followed by ordinary professional and personal expenses.",
+      "kyc_profile": {
+        "date_of_birth": "1987-11-09",
+        "tax_id_masked": "SYNTH-SSN-XXX-XX-0003",
+        "residential_address": "SYNTH 300 Example Ln, Palo Alto, CA 94300",
+        "citizenship_country": "US",
+        "id_verification": {
+          "document_type": "DRIVERS_LICENSE",
+          "verified": true,
+          "verified_date": "2022-09-06"
+        },
+        "source_of_funds": "Consulting fees from business clients",
+        "pep_flag": false,
+        "sanctions_screening": {
+          "status": "CLEAR",
+          "last_screening_date": "2026-09-30"
+        },
+        "kyc_last_review_date": "2025-09-06",
+        "kyc_next_review_date": "2028-09-06"
+      }
     },
     {
       "customer_id": "C004",
@@ -299,7 +376,36 @@
       "assigned_pattern_ids": [
         "TM-09"
       ],
-      "normal_behavior_summary": "International supplier wires and domestic customer receipts, with freight, customs, warehouse, insurance, and operating payments through one checking account."
+      "normal_behavior_summary": "International supplier wires and domestic customer receipts, with freight, customs, warehouse, insurance, and operating payments through one checking account.",
+      "kyc_profile": {
+        "entity_type": "CORPORATION",
+        "date_of_incorporation": "2018-08-15",
+        "tax_id_masked": "SYNTH-EIN-XX-XXX0004",
+        "registered_address": "SYNTH 400 Example Blvd, Fremont, CA 94500",
+        "id_verification": {
+          "document_type": "ARTICLES_OF_INCORPORATION",
+          "verified": true,
+          "verified_date": "2018-11-27"
+        },
+        "beneficial_owners": [
+          {
+            "name": "Wei-Lin Tran-Castellano",
+            "ownership_percent": 100,
+            "date_of_birth": "1975-06-30",
+            "id_document_type": "DRIVERS_LICENSE",
+            "id_verified": true
+          }
+        ],
+        "source_of_funds": "Wholesale electronics sales to U.S. retailers and distributors",
+        "cash_intensive_business": false,
+        "pep_flag": false,
+        "sanctions_screening": {
+          "status": "CLEAR",
+          "last_screening_date": "2026-09-30"
+        },
+        "kyc_last_review_date": "2025-11-27",
+        "kyc_next_review_date": "2026-11-27"
+      }
     },
     {
       "customer_id": "C005",
@@ -369,7 +475,26 @@
       "assigned_pattern_ids": [
         "TM-08"
       ],
-      "normal_behavior_summary": "Twice-monthly salary, household expenses, and ACH payments to brokerage and other financial-services providers; cash deposits and wires are rare."
+      "normal_behavior_summary": "Twice-monthly salary, household expenses, and ACH payments to brokerage and other financial-services providers; cash deposits and wires are rare.",
+      "kyc_profile": {
+        "date_of_birth": "1991-04-27",
+        "tax_id_masked": "SYNTH-SSN-XXX-XX-0005",
+        "residential_address": "SYNTH 500 Example Ct, Mountain View, CA 94000",
+        "citizenship_country": "US",
+        "id_verification": {
+          "document_type": "DRIVERS_LICENSE",
+          "verified": true,
+          "verified_date": "2023-01-23"
+        },
+        "source_of_funds": "Salary from employer",
+        "pep_flag": false,
+        "sanctions_screening": {
+          "status": "CLEAR",
+          "last_screening_date": "2026-09-30"
+        },
+        "kyc_last_review_date": "2026-01-23",
+        "kyc_next_review_date": "2029-01-23"
+      }
     }
   ]
 }

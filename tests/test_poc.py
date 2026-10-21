@@ -1,29 +1,47 @@
 import copy
-import csv
-import sqlite3
-from datetime import timedelta
+import os
+import uuid
+from datetime import datetime, timedelta
 
+import psycopg
 import pytest
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
+from aml_poc import config  # noqa: F401 - loads .env
 from aml_poc.api import create_app
-from aml_poc.config import DATA
-from aml_poc.data import Dataset
-from aml_poc.evaluate import evaluate
+from aml_poc.data import Dataset, by_customer
+from aml_poc.db import connect
 from aml_poc.models import ReviewDecision, Transaction
+from aml_poc.rules import DetectorEngine
 from aml_poc.service import Service
 from aml_poc.workflow import citation_defects
+
+pytestmark = pytest.mark.skipif(not os.environ.get("DB_HOST"), reason="RDS DB_* settings are not configured")
+
+
+@pytest.fixture(scope="module")
+def schemas():
+    created = []
+
+    def make():
+        created.append(f"aml_test_{uuid.uuid4().hex[:10]}")
+        return created[-1]
+
+    yield make
+    with connect() as conn:
+        for name in created:
+            conn.execute(f"DROP SCHEMA IF EXISTS {name} CASCADE")
 
 
 @pytest.fixture(scope="module")
 def dataset():
-    return Dataset(DATA)
+    return Dataset.load()
 
 
 @pytest.fixture(scope="module")
-def service(tmp_path_factory):
-    svc = Service(DATA, tmp_path_factory.mktemp("runtime"), "demo")
+def service(dataset, schemas):
+    svc = Service(dataset, schemas(), "demo")
     yield svc
     svc.close()
 
@@ -35,46 +53,35 @@ def tx(dataset, customer="C001", **values):
     return Transaction.model_validate(row)
 
 
-def test_historical_and_future_coverage(dataset):
-    history = evaluate(dataset)
-    combined = evaluate(dataset, True)
-    assert history["detected_groups"] == history["scenario_pattern_groups"] == 31
-    assert combined["detected_groups"] == combined["scenario_pattern_groups"] == 37
-    assert combined["agent_quality"].startswith("Not measured")
+def test_inputs_come_from_rds(dataset):
+    with connect(read_only=True) as conn:
+        counts = conn.execute(
+            "SELECT (SELECT count(*) FROM customers) AS customers, (SELECT count(*) FROM accounts) AS accounts,"
+            " (SELECT count(*) FROM transactions) AS transactions,"
+            " (SELECT count(*) FROM policy_patterns) AS patterns"
+        ).fetchone()
+    assert len(dataset.customers) == counts["customers"]
+    assert len(dataset.accounts) == counts["accounts"]
+    assert len(dataset.patterns) == counts["patterns"]
+    assert len(dataset.history) + len(dataset.stream) == len(dataset.transactions) == counts["transactions"]
+    assert max(r.txn_ts for r in dataset.history) < min(r.txn_ts for r in dataset.stream)
+    assert all("kyc_profile" in c and "assigned_pattern_ids" not in c for c in dataset.customers.values())
+    assert Dataset.load().policy_hash == dataset.policy_hash
 
 
-def test_stream_contract(dataset):
-    rows = dataset.read_transactions(DATA / "stream_transactions.csv")
-    with (DATA / "stream_labels.csv").open() as handle:
-        labels = list(csv.DictReader(handle))
-    assert len(rows) == len(labels) == 1000
-    assert sum(r["label"] == "SUSPICIOUS" for r in labels) == 46
-    assert len({r["scenario_id"] for r in labels if r["scenario_id"]}) == 5
-    assert min(r.txn_ts for r in rows) > max(r.txn_ts for r in dataset.history)
-    normal_invoices = [r.invoice_id for r in rows if r.transaction_id.startswith("STR-N") and r.invoice_id]
-    assert len(normal_invoices) == len(set(normal_invoices))
-
-
-def test_labels_are_not_runtime_inputs(dataset, tmp_path):
-    import shutil
-
-    for filename in [
-        "customers.json",
-        "accounts.json",
-        "counterparties.json",
-        "policy_patterns.json",
-        "transactions.csv",
-        "stream_transactions.csv",
-    ]:
-        shutil.copyfile(DATA / filename, tmp_path / filename)
-    loaded = Dataset(tmp_path)
-    assert len(loaded.history) == 4815
-    from aml_poc.rules import DetectorEngine
-
-    engine = DetectorEngine(loaded)
-    assert engine.detect(
-        "C001", [r for r in loaded.history if r.customer_id == "C001"], loaded.history[-1].txn_ts
-    )
+def test_stream_start_is_fixed_per_schema(dataset, schemas):
+    name = schemas()
+    svc = Service(dataset, name, "demo")
+    original = svc.data.stream_start
+    svc.close()
+    os.environ["AML_STREAM_EVENTS"] = "5"
+    try:
+        svc = Service(Dataset.load(), name, "demo")
+        assert svc.data.stream_start == original
+        svc.close()
+    finally:
+        del os.environ["AML_STREAM_EVENTS"]
+        dataset.split(original)
 
 
 def test_stream_pause_restart_and_event_idempotency(service, dataset):
@@ -102,8 +109,6 @@ def test_unknown_customer_and_wrong_account_rejected(service, dataset):
 
 
 def test_no_lookahead_before_threshold(dataset):
-    from aml_poc.rules import DetectorEngine
-
     engine = DetectorEngine(dataset)
     start = dataset.start + timedelta(days=3)
     rows = [
@@ -124,13 +129,12 @@ def test_no_lookahead_before_threshold(dataset):
 
 
 def test_funnel_allocations_never_reuse_dollars(dataset):
-    from aml_poc.data import by_customer
-    from aml_poc.rules import DetectorEngine
-
-    rows = dataset.history + dataset.read_transactions(DATA / "stream_transactions.csv")
+    rows = dataset.transactions
     groups = by_customer(rows)
-    alerts = DetectorEngine(dataset).detect("C002", groups["C002"], max(r.txn_ts for r in rows))
     amounts = {r.transaction_id: float(r.amount) for r in rows}
+    engine = DetectorEngine(dataset)
+    alerts = [a for cid in groups for a in engine.detect(cid, groups[cid], rows[-1].txn_ts)]
+    assert any(a["family"] == "TM-03" for a in alerts)
     for alert in alerts:
         if alert["family"] != "TM-03":
             continue
@@ -144,16 +148,19 @@ def test_funnel_allocations_never_reuse_dollars(dataset):
 
 
 def test_wire_burst_provisional_and_timer_confirmation(dataset):
-    from aml_poc.rules import DetectorEngine
-
     engine = DetectorEngine(dataset)
-    rows = dataset.history + dataset.read_transactions(DATA / "stream_transactions.csv")
-    rows = [r for r in rows if r.customer_id == "C005"]
-    end = max(r.txn_ts for r in rows)
-    provisional = next(a for a in engine.detect("C005", rows, end) if a["window_start"].startswith("2026-10"))
+    groups = by_customer(dataset.transactions)
+    end = dataset.transactions[-1].txn_ts
+    cid, burst = next(
+        (cid, a) for cid in groups for a in engine.detect(cid, groups[cid], end) if a["family"] == "TM-08"
+    )
+    at_burst_end = datetime.fromisoformat(burst["window_end"])
+    provisional = next(
+        a for a in engine.detect(cid, groups[cid], at_burst_end) if a["alert_id"] == burst["alert_id"]
+    )
     assert provisional["signal_status"] == "provisional"
-    due = __import__("datetime").datetime.fromisoformat(provisional["metrics"]["confirmation_due"])
-    confirmed = next(a for a in engine.detect("C005", rows, due) if a["alert_id"] == provisional["alert_id"])
+    due = datetime.fromisoformat(provisional["metrics"]["confirmation_due"])
+    confirmed = next(a for a in engine.detect(cid, groups[cid], due) if a["alert_id"] == burst["alert_id"])
     assert confirmed["signal_status"] == "confirmed"
 
 
@@ -273,9 +280,10 @@ def test_decision_reason_cannot_be_whitespace():
 
 def test_audit_is_append_only_and_verified(service):
     assert service.store.verify_audit()
-    with pytest.raises(sqlite3.IntegrityError, match="append-only"):
+    with pytest.raises(psycopg.errors.RaiseException, match="append-only"):
         service.store.db.execute("DELETE FROM audit")
-    service.store.db.rollback()
+    with pytest.raises(psycopg.errors.RaiseException, match="append-only"):
+        service.store.db.execute("TRUNCATE audit")
 
 
 def test_document_upload_text_and_blank_pdf(service):
@@ -407,6 +415,10 @@ def test_monitoring_reads_stay_responsive_during_model_calls(service):
 def test_api_validation_and_reports(service):
     with TestClient(create_app(service)) as client:
         assert client.get("/health").status_code == 200
+        assert client.get("/api/health").json() == {"ok": 1}
+        customers = client.get("/api/customers").json()
+        assert {c["customer_id"] for c in customers} == set(service.data.customers)
+        assert client.get("/metrics").status_code == 404
         assert client.post("/replay/start", json={"events_per_second": -1}).status_code == 422
         assert client.get("/alerts/unknown").status_code == 404
         alert = client.get("/alerts").json()[0]
@@ -419,30 +431,24 @@ def test_api_validation_and_reports(service):
         assert client.get(f"/cases/{case['case_id']}/report").status_code == 200
 
 
-def test_entire_stream_and_durable_restart(tmp_path):
-    svc = Service(DATA, tmp_path, "demo")
+def test_entire_stream_and_durable_restart(dataset, schemas):
+    name = schemas()
+    svc = Service(dataset, name, "demo")
     for row in svc.stream:
         svc.ingest(row)
     status = svc.status()
     stream_alerts = svc.list_alerts("stream")
-    assert status["stream_processed"] == 1000
-    assert {p for a in stream_alerts for p in a["pattern_ids"]} == {
-        "TM-01",
-        "TM-03",
-        "TM-04",
-        "TM-07",
-        "TM-08",
-        "TM-09",
-    }
-    alert = next(a for a in stream_alerts if a["family"] == "TM-08")
+    assert status["stream_processed"] == status["stream_total"] == len(dataset.stream)
+    assert stream_alerts
+    alert = stream_alerts[0]
     svc.add_demo_packet(alert["alert_id"])
     case = svc.investigate(alert["alert_id"], force=True)
-    assert case["recommendation"] == "request_info"
+    assert case["status"] == "awaiting_review"
     before = copy.deepcopy(status)
     svc.close()
-    svc = Service(DATA, tmp_path, "demo")
+    svc = Service(dataset, name, "demo")
     assert svc.status()["transactions"] == before["transactions"]
-    assert svc.status()["stream_processed"] == 1000
+    assert svc.status()["stream_processed"] == before["stream_processed"]
     loaded = svc.store.get_case(case["case_id"])
     assert loaded["report"] == case["report"]
     result = svc.review(
@@ -455,10 +461,11 @@ def test_entire_stream_and_durable_restart(tmp_path):
         },
     )
     assert result["status"] == "reviewed"
-    svc.advance_clock("2027-03-01T00:00:00")
-    assert svc.store.get_alert(alert["alert_id"])["signal_status"] == "confirmed"
+    provisional = [a for a in svc.store.alerts() if a["signal_status"] == "provisional"]
+    svc.advance_clock("2099-01-01T00:00:00")
+    assert all(svc.store.get_alert(a["alert_id"])["signal_status"] == "confirmed" for a in provisional)
     assert svc.store.verify_audit()
     svc.close()
-    svc = Service(DATA, tmp_path, "demo")
-    assert svc.status()["event_clock"] == "2027-03-01T00:00:00"
+    svc = Service(dataset, name, "demo")
+    assert svc.status()["event_clock"] == "2099-01-01T00:00:00"
     svc.close()

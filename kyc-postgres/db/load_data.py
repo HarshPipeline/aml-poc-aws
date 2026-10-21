@@ -1,7 +1,7 @@
 """Load the cleaned AML demo data into the aml_demo PostgreSQL database.
 
-Usage (from the Gates folder):
-    .venv/bin/python db/load_data.py
+Usage (from the repo root):
+    .venv/bin/python kyc-postgres/db/load_data.py
 
 Drops and recreates all tables from db/schema.sql, so it is safe to re-run.
 """
@@ -15,7 +15,7 @@ import psycopg2
 from dotenv import load_dotenv
 from psycopg2.extras import Json, execute_values
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = ROOT / "aml_demo_data_cleaned"
 SCHEMA_FILE = Path(__file__).resolve().parent / "schema.sql"
 

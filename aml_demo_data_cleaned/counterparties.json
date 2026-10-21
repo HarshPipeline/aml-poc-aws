@@ -771,6 +771,94 @@
         "max": 600
       },
       "data_classification": "SYNTHETIC_DEMO_DATA"
+    },
+    {
+      "counterparty_id": "CP-C001-007",
+      "name": "Peninsula Payroll Partners",
+      "entity_type": "BUSINESS",
+      "relationship": "PAYROLL_PROCESSOR",
+      "industry": "PAYROLL_PROCESSING",
+      "country": "US",
+      "state": "CA",
+      "is_known_counterparty": true,
+      "associated_customer_ids": [
+        "C001"
+      ],
+      "expected_direction": "OUTGOING",
+      "expected_payment_methods": [
+        "ACH"
+      ],
+      "expected_amount_range_usd": {
+        "min": 5000,
+        "max": 7000
+      },
+      "data_classification": "SYNTHETIC_DEMO_DATA"
+    },
+    {
+      "counterparty_id": "CP-C001-008",
+      "name": "Bayline Business Insurance Co.",
+      "entity_type": "BUSINESS",
+      "relationship": "INSURER",
+      "industry": "INSURANCE",
+      "country": "US",
+      "state": "CA",
+      "is_known_counterparty": true,
+      "associated_customer_ids": [
+        "C001"
+      ],
+      "expected_direction": "OUTGOING",
+      "expected_payment_methods": [
+        "ACH"
+      ],
+      "expected_amount_range_usd": {
+        "min": 400,
+        "max": 600
+      },
+      "data_classification": "SYNTHETIC_DEMO_DATA"
+    },
+    {
+      "counterparty_id": "CP-C002-008",
+      "name": "Harborview Corporate Events LLC",
+      "entity_type": "BUSINESS",
+      "relationship": "CATERING_CLIENT",
+      "industry": "EVENT_PLANNING",
+      "country": "US",
+      "state": "CA",
+      "is_known_counterparty": true,
+      "associated_customer_ids": [
+        "C002"
+      ],
+      "expected_direction": "INCOMING",
+      "expected_payment_methods": [
+        "ACH"
+      ],
+      "expected_amount_range_usd": {
+        "min": 2500,
+        "max": 5000
+      },
+      "data_classification": "SYNTHETIC_DEMO_DATA"
+    },
+    {
+      "counterparty_id": "CP-C003-008",
+      "name": "Federal and State Estimated Tax Payments (Synthetic)",
+      "entity_type": "GOVERNMENT",
+      "relationship": "TAX_AUTHORITY",
+      "industry": "GOVERNMENT_TAX",
+      "country": "US",
+      "state": "CA",
+      "is_known_counterparty": true,
+      "associated_customer_ids": [
+        "C003"
+      ],
+      "expected_direction": "OUTGOING",
+      "expected_payment_methods": [
+        "ACH"
+      ],
+      "expected_amount_range_usd": {
+        "min": 7000,
+        "max": 9500
+      },
+      "data_classification": "SYNTHETIC_DEMO_DATA"
     }
   ]
 }

@@ -145,7 +145,8 @@ def live_stream():
         else "Paused / ready"
     )
     st.caption(
-        f"{state_label} · Event clock {status['event_clock']} UTC · Agent mode: {status['mode'].upper()}"
+        f"{state_label} · Event clock {status['event_clock']} UTC · Agent mode: {status['mode'].upper()} · "
+        f"RDS schema {status.get('app_schema', 'aml_app')}"
     )
     if status["error"]:
         st.error(status["error"])
@@ -802,26 +803,10 @@ def evaluation():
         "Evaluation & policy",
         "Inspect detector validation, scenario definitions and the policy version used for each alert.",
     )
-    metrics = api("/metrics") or {}
-    if metrics:
-        a, b, c = st.columns(3)
-        a.metric(
-            "Historical group coverage",
-            f"{metrics['history']['detected_groups']} / {metrics['history']['scenario_pattern_groups']}",
-        )
-        b.metric(
-            "History + stream group coverage",
-            f"{metrics['combined']['detected_groups']} / {metrics['combined']['scenario_pattern_groups']}",
-        )
-        c.metric("Alerts without planted overlap", metrics["combined"]["alerts_without_planted_overlap"])
-        st.caption(metrics["combined"]["method"])
-        st.info(metrics["combined"]["agent_quality"])
-        st.dataframe(pd.DataFrame(metrics["combined"]["matches"]), hide_index=True, width="stretch")
-        st.download_button(
-            "Download evaluation", json.dumps(metrics, indent=2), "evaluation.json", "application/json"
-        )
-    else:
-        st.info("Run ./run.sh prepare to compute detector evaluation.")
+    st.info(
+        "Detector coverage scoring needs labelled outcomes, which are not stored in RDS. "
+        "Policies and thresholds below are read from the RDS policy_patterns table."
+    )
     policies = api("/policies")
     if policies:
         section_heading("Detection scenario library", "Enabled policy definitions")
