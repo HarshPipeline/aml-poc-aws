@@ -11,3 +11,6 @@ kyc-dashboard/node_modules/
 kyc-dashboard/*.tsbuildinfo
 
 .DS_Store
+
+# Local PDF extraction snapshots and previews
+tmp/

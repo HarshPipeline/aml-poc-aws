@@ -29,7 +29,7 @@ export default function CounterpartiesTab({ data }: { data: CustomerKyc }) {
 
       {unknown.length > 0 && (
         <Panel
-          title="Wire parties not on file"
+          title="Wire Parties Not on File"
           icon={<HelpCircle className="h-4 w-4" />}
           action={<span className="text-xs text-neutral-500">Wires with parties that are not known counterparties</span>}
         >
@@ -58,7 +58,7 @@ export default function CounterpartiesTab({ data }: { data: CustomerKyc }) {
       )}
 
       <Panel
-        title="Known counterparties"
+        title="Known Counterparties"
         icon={<Network className="h-4 w-4" />}
         action={<span className="text-xs text-neutral-500">From the customer's KYC file</span>}
       >

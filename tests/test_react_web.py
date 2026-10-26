@@ -66,3 +66,27 @@ def test_legacy_kyc_links_redirect_to_console(monkeypatch):
         response = client.get("/kyc/C003?tab=transactions", follow_redirects=False)
         assert response.status_code == 307
         assert response.headers["location"] == "http://localhost:8502/kyc/C003?tab=transactions"
+
+
+def test_document_list_respects_customer_and_transaction_scope():
+    from threading import RLock
+    from types import SimpleNamespace
+    from aml_poc.api import create_app
+
+    def documents(customer_id):
+        assert customer_id == "C001"
+        return [
+            {"document_id": "MATCH", "transaction_ids": ["T1"]},
+            {"document_id": "PROFILE", "transaction_ids": []},
+            {"document_id": "OTHER_CASE", "transaction_ids": ["T2"]},
+        ]
+
+    store = SimpleNamespace(
+        get_alert=lambda key: {"customer_id": "C001", "transaction_ids": ["T1"]} if key == "A1" else None,
+        documents=documents,
+    )
+    with TestClient(create_app(SimpleNamespace(lock=RLock(), store=store))) as client:
+        result = client.get("/alerts/A1/documents")
+        assert result.status_code == 200
+        assert [d["document_id"] for d in result.json()] == ["MATCH", "PROFILE"]
+        assert client.get("/alerts/missing/documents").status_code == 404

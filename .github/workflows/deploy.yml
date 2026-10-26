@@ -50,10 +50,8 @@ jobs:
               {"name":"DB_PASSWORD","value":"${{ secrets.DB_PASSWORD }}"},
               {"name":"DB_SSLMODE","value":"require"},
               {"name":"AML_APP_SCHEMA","value":"aml_app"},
-              {"name":"AML_AGENT_MODE","value":"claude"},
+              {"name":"AML_AGENT_MODE","value":"${{ vars.AML_AGENT_MODE || 'demo' }}"},
               {"name":"AML_SERVE_CONSOLE","value":"true"},
-              {"name":"ANTHROPIC_API_KEY","value":"${{ secrets.ANTHROPIC_API_KEY }}"},
-              {"name":"AML_CLAUDE_MODEL","value":"${{ secrets.AML_CLAUDE_MODEL }}"},
               {"name":"OPENAI_API_KEY","value":"${{ secrets.OPENAI_API_KEY }}"},
               {"name":"AML_OPENAI_MODEL","value":"${{ secrets.AML_OPENAI_MODEL }}"}
             ]

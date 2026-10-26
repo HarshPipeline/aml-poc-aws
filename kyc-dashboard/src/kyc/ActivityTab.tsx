@@ -50,7 +50,7 @@ export default function ActivityTab({ data }: { data: CustomerKyc }) {
   return (
     <div className="space-y-5">
       <Panel
-        title="Expected vs actual activity"
+        title="Expected Vs Actual Activity"
         icon={<BarChart3 className="h-4 w-4" />}
         action={
           <span className="text-xs text-neutral-500">
@@ -99,7 +99,7 @@ export default function ActivityTab({ data }: { data: CustomerKyc }) {
       </Panel>
 
       <Panel
-        title="Monthly activity"
+        title="Monthly Activity"
         icon={<CalendarRange className="h-4 w-4" />}
         action={
           <button onClick={() => setShowMonths((s) => !s)} className="text-xs font-medium text-brand hover:text-brand-light">
@@ -167,7 +167,7 @@ export default function ActivityTab({ data }: { data: CustomerKyc }) {
           </ul>
         </Panel>
 
-        <Panel title="Transaction types" icon={<ListTree className="h-4 w-4" />}>
+        <Panel title="Transaction Types" icon={<ListTree className="h-4 w-4" />}>
           <p className="text-xs uppercase tracking-wider text-neutral-500">Count · total</p>
           <ul className="mt-1 divide-y divide-line text-sm">
             {data.transaction_types.map((t) => {

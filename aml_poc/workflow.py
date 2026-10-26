@@ -116,26 +116,10 @@ class Workflow:
     def __init__(self, data, store, schema, mode="demo"):
         self.data, self.store, self.mode = data, store, mode
         self.model = None
-        self.model_name = (
-            os.environ.get("AML_OPENAI_MODEL")
-            if mode == "openai"
-            else os.environ.get("AML_CLAUDE_MODEL")
-            if mode == "claude"
-            else None
-        )
-        if mode == "claude":
-            if not os.environ.get("ANTHROPIC_API_KEY") or not os.environ.get("AML_CLAUDE_MODEL"):
-                raise ValueError("Claude mode requires ANTHROPIC_API_KEY and AML_CLAUDE_MODEL in .env")
-            from langchain_anthropic import ChatAnthropic
-
-            self.model = ChatAnthropic(
-                model=os.environ["AML_CLAUDE_MODEL"],
-                temperature=0,
-                max_tokens=4000,
-                timeout=60,
-                max_retries=1,
-            )
-        elif mode == "openai":
+        if mode not in {"demo", "openai"}:
+            raise ValueError("AML_AGENT_MODE must be demo or openai")
+        self.model_name = os.environ.get("AML_OPENAI_MODEL") if mode == "openai" else None
+        if mode == "openai":
             if not os.environ.get("OPENAI_API_KEY") or not os.environ.get("AML_OPENAI_MODEL"):
                 raise ValueError("OpenAI mode requires OPENAI_API_KEY and AML_OPENAI_MODEL in .env")
             from .providers import OpenAIModel
@@ -211,6 +195,8 @@ class Workflow:
                 return {"case": case}
             case["active_agent"] = name
             started = now()
+            case["active_started_at"] = started
+            self.store.put_case(case)
             try:
                 getattr(self, name)(case)
             except Exception as error:
@@ -240,13 +226,7 @@ class Workflow:
                 "agent_completed",
                 {
                     "mode": case["steps"][-1]["mode"],
-                    "model": (
-                        os.environ.get("AML_OPENAI_MODEL")
-                        if self.mode == "openai"
-                        else os.environ.get("AML_CLAUDE_MODEL")
-                    )
-                    if self.model
-                    else None,
+                    "model": self.model_name if self.model else None,
                     "evidence_ids": [e["id"] for e in case["evidence"]],
                     "inputs": {
                         "customer_id": case["alert"]["customer_id"],

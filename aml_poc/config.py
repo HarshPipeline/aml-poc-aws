@@ -9,8 +9,8 @@ load_dotenv(ROOT / ".env")
 
 def agent_mode() -> str:
     mode = os.environ.get("AML_AGENT_MODE", "demo")
-    if mode not in {"demo", "claude", "openai"}:
-        raise ValueError("AML_AGENT_MODE must be demo, claude, or openai")
+    if mode not in {"demo", "openai"}:
+        raise ValueError("AML_AGENT_MODE must be demo or openai")
     return mode
 
 

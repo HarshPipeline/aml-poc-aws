@@ -143,6 +143,19 @@ def create_app(service=None):
     ):
         return svc(request).add_demo_packet(alert_id, resolution=resolution)
 
+    @app.get("/alerts/{alert_id}/documents")
+    def alert_documents(request: Request, alert_id: str):
+        service = svc(request)
+        with service.lock:
+            alert = service.store.get_alert(alert_id)
+            if not alert:
+                raise HTTPException(404, "Alert not found")
+            return [
+                doc for doc in service.store.documents(alert["customer_id"])
+                if not doc.get("transaction_ids")
+                or set(doc["transaction_ids"]).intersection(alert["transaction_ids"])
+            ]
+
     @app.post("/documents")
     def document(request: Request, body: EvidenceDocument):
         return svc(request).add_document(body.model_dump())

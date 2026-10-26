@@ -43,3 +43,22 @@ def test_openai_image_adapter_retains_media_type():
         [("human", [{"type": "image", "source": {"media_type": "image/png", "data": "sample"}}])]
     )
     assert captured["input"][0]["content"][0]["image_url"] == "data:image/png;base64,sample"
+
+
+@pytest.mark.parametrize("mode", ["demo", "openai"])
+def test_supported_agent_modes(monkeypatch, mode):
+    from aml_poc.config import agent_mode
+
+    monkeypatch.setenv("AML_AGENT_MODE", mode)
+    assert agent_mode() == mode
+
+
+def test_removed_provider_is_rejected_before_database_access(monkeypatch):
+    from aml_poc.config import agent_mode
+    from aml_poc.workflow import Workflow
+
+    monkeypatch.setenv("AML_AGENT_MODE", "claude")
+    with pytest.raises(ValueError, match="demo or openai"):
+        agent_mode()
+    with pytest.raises(ValueError, match="demo or openai"):
+        Workflow(None, None, "unused", mode="claude")

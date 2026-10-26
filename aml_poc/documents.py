@@ -1,4 +1,4 @@
-"""Local PDF/text intake and optional Claude vision, with explicit provenance."""
+"""Local PDF/text intake and optional OpenAI image extraction, with explicit provenance."""
 
 import base64
 import hashlib
@@ -55,7 +55,7 @@ def extract(service, alert_id, filename, content_type, content, evidence_types):
     elif content_type in {"image/png", "image/jpeg", "image/webp"}:
         if service.workflow.model is None:
             raise ValueError(
-                "Image extraction requires OpenAI or Claude mode. In demo mode, paste a verified transcription in structured document intake."
+                "Image extraction requires OpenAI mode. In demo mode, paste a verified transcription in structured document intake."
             )
         # Validate media before sending it to the configured model.
         from PIL import Image

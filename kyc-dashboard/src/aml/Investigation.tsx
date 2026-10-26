@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { Panel, Badge } from "../components/ui";
 import CustomerKyc from "../pages/CustomerKyc";
+import Evidence from "./Evidence";
+import SummaryRun from "./SummaryRun";
 import { request, useData, usd, human, scenario, download } from "./client";
 import { Heading, Message, Facts, Json } from "./shared";
 
@@ -18,9 +20,8 @@ export default function Investigation() {
   const {
     data: report,
     error: caseError,
-    loading,
     reload: refreshCase,
-  } = useData(`/alerts/${alertId}/case`);
+  } = useData(`/alerts/${alertId}/case`, 1000);
   const [busy, setBusy] = useState(false),
     [failure, setFailure] = useState("");
   const [name, setName] = useState(""),
@@ -82,12 +83,12 @@ export default function Investigation() {
   return (
     <div className="page">
       <Link className="text-xs text-neutral-500 hover:text-brand" to="/alerts">
-        ← Alert queue
+        ← Investigations
       </Link>
       <div className="mt-4">
         <Heading
-          title="Case investigation"
-          description="Review the customer and evidence, then record an investigator decision."
+          title={a?.customer_name ?? "Investigation"}
+          description={a ? scenario(a.pattern_ids) : "Assess the customer profile and supporting evidence."}
         />
       </div>
       {(error || caseError || failure) && (
@@ -98,14 +99,14 @@ export default function Investigation() {
         <>
           <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-bold">{a.customer_name}</h2>
+              <p className="text-xs text-neutral-500">Alert reference</p>
               <p className="mt-1 text-sm text-neutral-400">
-                {a.customer_id} · {scenario(a.pattern_ids)} · {a.alert_id}
+                {a.alert_id} · Customer {a.customer_id}
               </p>
             </div>
             <div className="flex gap-2">
-              <Badge tone={a.priority === "high" ? "red" : a.priority === "medium" ? "amber" : "neutral"}>{a.priority} priority</Badge>
-              <Badge>{a.signal_status}</Badge>
+              <Badge tone={a.priority === "high" ? "red" : a.priority === "medium" ? "amber" : "neutral"}>{human(a.priority)} priority</Badge>
+              {a.signal_status !== "confirmed" && <Badge>{human(a.signal_status)}</Badge>}
             </div>
           </div>
           <div className="mb-5 grid grid-cols-3 gap-4 rounded-xl border border-line bg-panel p-4">
@@ -118,63 +119,39 @@ export default function Investigation() {
               <p>{a.transaction_ids.length}</p>
             </div>
             <div>
-              <small>Workflow</small>
+              <small>Investigation status</small>
               <p>{human(report?.status ?? "not_started")}</p>
             </div>
           </div>
-          {!loading && (!report || a.report_stale) && (
-            <div className="mb-5">
-              <button
-                className="primary"
-                disabled={busy}
-                onClick={() => investigate()}
-              >
-                {busy
-                  ? "Investigating…"
-                  : report
-                    ? "Update investigation"
-                    : "Start investigation"}
-              </button>
-              {a.report_stale && (
-                <p className="mt-2 text-sm text-brand">
-                  Evidence changed. Update the report before recording a
-                  decision.
-                </p>
-              )}
-            </div>
-          )}
-          {busy && (
-            <Message>Processing your request. This may take a moment…</Message>
-          )}
           <nav
             className="mb-6 flex overflow-x-auto border-b border-line"
             aria-label="Investigation sections"
           >
-            {tabs.map((t) => (
+            {tabs.filter(t => t !== "Activity").map((t) => (
               <button
                 key={t}
                 className={`shrink-0 border-b-2 px-4 py-3 text-sm ${tab === t ? "border-brand text-brand" : "border-transparent text-neutral-400"}`}
                 onClick={() => setParams({ section: t })}
               >
-                {t}
+                {({Overview: "Summary", "Customer KYC": "Customer", "Transactions & evidence": "Evidence", Documents: "Documents", Decision: "Decision"} as Record<string,string>)[t] ?? t}
               </button>
             ))}
           </nav>
+          {tab === "Overview" && <SummaryRun key={alertId} alertId={alertId} report={report} stale={a.report_stale} onFinished={refreshCase} />}
           {tab === "Customer KYC" && (
             <CustomerKyc customerIdOverride={a.customer_id} />
           )}
-          {tab === "Overview" &&
+          {tab === "Overview" && report && report.status !== "investigating" && !report.decision && !a.report_stale && (
+            <div className="next-step"><div><strong>{report.completeness === "complete" ? `Suggested action: ${human(report.recommendation)}` : "Additional evidence required"}</strong><p>{report.completeness === "complete" ? "Read the summary, check the evidence, then record your decision." : "A recommendation requires additional evidence. Attach supporting documents or request information."}</p></div><button className="primary" onClick={() => setParams({section: report.completeness === "complete" ? "Decision" : "Documents"})}>{report.completeness === "complete" ? "Review decision" : "Add documents"} →</button></div>
+          )}
+          {tab === "Overview" && report?.status !== "investigating" &&
             (report ? (
               <div className="grid gap-5 xl:grid-cols-3">
                 <div className="space-y-4 xl:col-span-2">
-                  <Message>
-                    {report.completeness === "complete"
-                      ? `Suggested action: ${human(report.recommendation)}. Review the evidence before recording a decision.`
-                      : "Incomplete assessment. Review the missing evidence; no recommendation has been made."}
-                  </Message>
                   <p className="text-sm leading-6 text-neutral-300">
                     {report.summary}
                   </p>
+                  <details className="findings-details"><summary>Findings and alternative explanation</summary><div className="space-y-4">
                   {(report.findings ?? []).map((f: any, i: number) => (
                     <Panel key={i} title={`Finding ${i + 1}`}>
                       <p className="text-sm leading-6">{f.text}</p>
@@ -195,11 +172,12 @@ export default function Investigation() {
                       </div>
                     </Panel>
                   ))}
-                  <Panel title="Alternative explanation">
+                  <Panel title="Alternative Explanation">
                     <p className="text-sm leading-6">
                       {report.innocent_explanation ?? "Not available"}
                     </p>
                   </Panel>
+                  </div></details>
                   <button
                     className="secondary"
                     onClick={() =>
@@ -214,6 +192,7 @@ export default function Investigation() {
                   </button>
                 </div>
                 <div className="space-y-5">
+                  <details><summary>Report details</summary>
                   <Facts
                     title="Review readiness"
                     items={[
@@ -227,22 +206,9 @@ export default function Investigation() {
                       ["Decision", report.decision ? "Recorded" : "Pending"],
                     ]}
                   />
-                  <Facts
-                    title="Customer context"
-                    items={[
-                      ["Type", human(report.profile?.customer_type)],
-                      [
-                        "Occupation",
-                        report.profile?.occupation_or_industry ?? "Unavailable",
-                      ],
-                      [
-                        "Risk rating",
-                        report.profile?.risk_rating ?? "Unavailable",
-                      ],
-                    ]}
-                  />
+                  </details>
                   {report.missing?.length > 0 && (
-                    <Panel title="Outstanding evidence">
+                    <Panel title="Outstanding Evidence">
                       <ul className="list-inside list-disc text-sm text-brand-light">
                         {report.missing.map((m: string) => (
                           <li key={m}>{m}</li>
@@ -251,9 +217,7 @@ export default function Investigation() {
                     </Panel>
                   )}
                   {report.critic?.defects?.length > 0 && (
-                    <Panel title="Quality exceptions">
-                      <Json value={report.critic.defects} />
-                    </Panel>
+                    <details><summary>Quality checks need attention</summary><Json value={report.critic.defects} /></details>
                   )}
                 </div>
               </div>
@@ -264,63 +228,14 @@ export default function Investigation() {
               </Message>
             ))}
           {tab === "Transactions & evidence" && (
-            <div className="space-y-4">
-              <details>
-                <summary>Scenario calculations and thresholds</summary>
-                <Json value={a.metrics} />
-              </details>
-              {(report?.evidence ?? []).map((item: any) => (
-                <details
-                  key={item.id}
-                  open={params.get("evidence") === item.id}
-                >
-                  <summary>
-                    {item.id} · {human(item.kind)} · {item.title}
-                  </summary>
-                  <p className="my-2 text-xs text-neutral-500">{item.source}</p>
-                  {Array.isArray(item.value) &&
-                  item.value[0]?.transaction_id ? (
-                    <div className="table-panel">
-                      <table>
-                        <thead>
-                          <tr>
-                            {[
-                              "Transaction",
-                              "Time",
-                              "Type",
-                              "Direction",
-                              "Amount",
-                            ].map((h) => (
-                              <th key={h}>{h}</th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {item.value.map((r: any) => (
-                            <tr key={r.transaction_id}>
-                              <td>{r.transaction_id}</td>
-                              <td>{r.txn_ts}</td>
-                              <td>{human(r.txn_type)}</td>
-                              <td>{r.direction}</td>
-                              <td>{usd(r.amount)}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : (
-                    <Json value={item.value} />
-                  )}
-                </details>
-              ))}
-            </div>
+            <Evidence alert={a} report={report} selected={params.get("evidence")} />
           )}
           {tab === "Documents" && (
             <Documents alert={a} report={report} refresh={refresh} />
           )}
           {tab === "Decision" &&
             (report?.decision ? (
-              <Panel title="Recorded decision">
+              <Panel title="Recorded Decision">
                 <Badge tone="green">{human(report.decision.action)}</Badge>
                 <p className="mt-4">{report.decision.reason}</p>
                 <p className="mt-2 text-sm text-neutral-400">
@@ -333,7 +248,7 @@ export default function Investigation() {
                 )}
               </Panel>
             ) : report?.status === "awaiting_review" ? (
-              <Panel title="Investigator decision">
+              <Panel title="Investigator Decision">
                 <form onSubmit={decide} className="space-y-5">
                   <div className="grid gap-4 md:grid-cols-2">
                     <label>
@@ -351,7 +266,7 @@ export default function Investigation() {
                         value={action}
                         onChange={(e) => setAction(e.target.value)}
                       >
-                        <option value="clear">Clear / close</option>
+                        <option value="clear">Close alert</option>
                         <option value="request_info">
                           Request information
                         </option>
@@ -394,7 +309,7 @@ export default function Investigation() {
                       reason.trim().length < 5
                     }
                   >
-                    Record investigator decision
+                    Record decision
                   </button>
                 </form>
               </Panel>
@@ -403,18 +318,19 @@ export default function Investigation() {
                 Complete an investigation before recording a decision.
               </Message>
             ))}
+          <div className="mb-5 mt-6"><button className="text-xs text-neutral-400 hover:text-brand" onClick={() => setParams({section: tab === "Activity" ? "Overview" : "Activity"})}>{tab === "Activity" ? "← Back to summary" : "Investigation history and options"}</button></div>
           {tab === "Activity" && (
             <div className="space-y-4">
               {(report?.steps ?? []).map((s: any, i: number) => (
                 <Panel key={i} title={`${i + 1}. ${human(s.agent)}`}>
                   <p className="text-sm text-neutral-400">
-                    {s.mode} · {s.evidence_count} evidence entries ·{" "}
+                    {human(s.mode)} · {s.evidence_count} evidence entries ·{" "}
                     {s.finished_at}
                   </p>
                 </Panel>
               ))}
               <details>
-                <summary>Report controls & demonstration scenarios</summary>
+                <summary>Report controls and demo scenarios</summary>
                 <div className="mt-4 flex flex-wrap gap-3">
                   <button
                     disabled={busy}
@@ -464,7 +380,6 @@ export default function Investigation() {
 
 function Documents({
   alert,
-  report,
   refresh,
 }: {
   alert: any;
@@ -480,13 +395,16 @@ function Documents({
     [busy, setBusy] = useState(false),
     [message, setMessage] = useState(""),
     [error, setError] = useState("");
+  const { data: documents, error: documentError, reload: refreshDocuments } =
+    useData<any[]>(`/alerts/${alert.alert_id}/documents`, 5000);
   async function run(fn: () => Promise<unknown>) {
     setBusy(true);
     setError("");
     setMessage("");
     try {
       await fn();
-      setMessage("Evidence attached. Update the investigation to include it.");
+      setMessage("Document attached. Run the investigation from Summary to include the new evidence.");
+      refreshDocuments();
       refresh();
     } catch (e) {
       setError((e as Error).message);
@@ -517,7 +435,7 @@ function Documents({
     <div className="space-y-5">
       {message && <Message>{message}</Message>}
       {error && <Message error>{error}</Message>}
-      <Panel title="Supporting documents">
+      <Panel title="Supporting Documents">
         <p className="mb-4 text-sm text-neutral-400">
           Choose the evidence requirements supported by the document. Extraction
           does not establish authenticity.
@@ -622,16 +540,22 @@ function Documents({
           </button>
         </form>
       </details>
-      {(report?.evidence ?? [])
-        .filter((e: any) => String(e.kind).includes("document"))
-        .map((d: any) => (
-          <details key={d.id}>
-            <summary>
-              {d.id} · {d.title}
-            </summary>
-            <Json value={d.value} />
-          </details>
-        ))}
+      <Panel title="Attached Documents">
+        {documentError && <Message error>{documentError}</Message>}
+        {!documents?.length && !documentError && <p className="text-sm text-neutral-400">No documents attached to this investigation.</p>}
+        <div className="space-y-4">
+          {(documents ?? []).map((doc: any) => (
+            <article key={doc.document_id} className="rounded-lg border border-neutral-800 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div><h3 className="font-medium">{doc.title}</h3><p className="mt-1 text-xs text-neutral-500">{doc.document_id}</p></div>
+                <Badge tone={doc.readable ? "green" : "amber"}>{doc.readable ? "Text Extracted" : "Needs Transcription"}</Badge>
+              </div>
+              <p className="mt-3 text-sm text-neutral-400">Evidence categories: {doc.evidence_types.join(" · ")}</p>
+              <details className="mt-3"><summary>View Extracted Text</summary><div className="mt-3 max-h-96 overflow-auto whitespace-pre-wrap text-sm leading-6">{doc.content}</div></details>
+            </article>
+          ))}
+        </div>
+      </Panel>
       <details>
         <summary>Demonstration evidence</summary>
         <div className="mt-4 flex gap-3">

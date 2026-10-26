@@ -59,7 +59,7 @@ export default function HistoryTab({ data }: { data: CustomerKyc }) {
 
   return (
     <div className="grid gap-5 lg:grid-cols-3">
-      <Panel title="KYC timeline" icon={<History className="h-4 w-4" />} className="lg:col-span-2">
+      <Panel title="KYC Timeline" icon={<History className="h-4 w-4" />} className="lg:col-span-2">
         <ol className="relative ml-2 border-l border-line">
           {events.map((e, i) => (
             <li key={i} className="relative pb-5 pl-6 last:pb-0">
@@ -90,7 +90,7 @@ export default function HistoryTab({ data }: { data: CustomerKyc }) {
         </ol>
       </Panel>
 
-      <Panel title="Review policy" icon={<CalendarClock className="h-4 w-4" />}>
+      <Panel title="Review Policy" icon={<CalendarClock className="h-4 w-4" />}>
         <dl className="space-y-3.5">
           <Field label="Status"><ReviewBadge status={c.kyc_review_status} /></Field>
           <Field label="Risk rating">{c.risk_rating}</Field>

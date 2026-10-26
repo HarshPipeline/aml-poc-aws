@@ -1,3 +1,4 @@
+import { titleCase } from "../utils/titleCase"
 import { Eye, EyeOff } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import type { ReviewStatus, RiskRating } from '../api'
@@ -21,7 +22,7 @@ export function Panel({
       <header className="flex items-center justify-between gap-3 border-b border-line px-4 py-2.5">
         <h2 className="flex items-center gap-2 text-sm font-semibold tracking-wide text-brand">
           {icon}
-          {title}
+          {titleCase(title)}
         </h2>
         {action}
       </header>
@@ -62,7 +63,7 @@ export function Badge({ tone = 'neutral', children }: { tone?: Tone; children: R
 const riskTone: Record<RiskRating, Tone> = { LOW: 'green', MEDIUM: 'amber', HIGH: 'red' }
 
 export function RiskBadge({ rating }: { rating: RiskRating }) {
-  return <Badge tone={riskTone[rating]}>{rating} risk</Badge>
+  return <Badge tone={riskTone[rating]}>{rating.charAt(0) + rating.slice(1).toLowerCase()} risk</Badge>
 }
 
 const reviewLabel: Record<ReviewStatus, [string, Tone]> = {
