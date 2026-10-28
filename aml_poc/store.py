@@ -4,6 +4,7 @@ import threading
 from datetime import UTC, datetime
 from functools import wraps
 
+import psycopg
 from psycopg import sql
 
 from .db import checked_schema, connect
@@ -44,6 +45,8 @@ SCHEMA = (
     "CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL)",
     """CREATE TABLE IF NOT EXISTS documents (
   seq BIGINT GENERATED ALWAYS AS IDENTITY, id TEXT PRIMARY KEY, customer_id TEXT NOT NULL, payload JSONB NOT NULL)""",
+    """CREATE TABLE IF NOT EXISTS evidence_requests (
+  id TEXT PRIMARY KEY, alert_id TEXT NOT NULL, payload JSONB NOT NULL)""",
     """CREATE OR REPLACE FUNCTION audit_append_only() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN RAISE EXCEPTION 'Audit records are append-only'; END $$""",
     """CREATE OR REPLACE TRIGGER audit_no_update BEFORE UPDATE OR DELETE ON audit
@@ -87,7 +90,13 @@ class Store:
         return self.db
 
     def _query(self, statement, params=()):
-        return self._conn().execute(statement, params)
+        try:
+            return self._conn().execute(statement, params)
+        except psycopg.OperationalError:
+            if not self.db.closed:
+                self.db.close()
+            self.db = connect(schema=self.schema)
+            return self._conn().execute(statement, params)
 
     @synchronized
     def close(self):
@@ -230,6 +239,11 @@ class Store:
         return [r["payload"] for r in rows]
 
     @synchronized
+    def get_document(self, document_id):
+        row = self._query("SELECT payload FROM documents WHERE id=%s", (document_id,)).fetchone()
+        return row["payload"] if row else None
+
+    @synchronized
     def put_document(self, document):
         # Evidence is immutable; a correction must have a new document ID.
         old = self._query("SELECT payload FROM documents WHERE id=%s", (document["document_id"],)).fetchone()
@@ -247,6 +261,46 @@ class Store:
             {"document_id": document["document_id"], "customer_id": document["customer_id"]},
         )
         return True
+
+    @synchronized
+    def delete_document(self, document_id):
+        old = self._query("SELECT payload FROM documents WHERE id=%s", (document_id,)).fetchone()
+        if not old:
+            return False
+        self._query("DELETE FROM documents WHERE id=%s", (document_id,))
+        self.audit(
+            "document_intake",
+            "document_removed",
+            {
+                "document_id": document_id,
+                "customer_id": old["payload"].get("customer_id"),
+                "source_relative": old["payload"].get("source_relative"),
+            },
+        )
+        return True
+
+    @synchronized
+    def put_request(self, request):
+        existing = self._query(
+            "SELECT payload FROM evidence_requests WHERE id=%s", (request["request_id"],)
+        ).fetchone()
+        if existing:
+            return existing["payload"]
+        self._query(
+            "INSERT INTO evidence_requests (id, alert_id, payload) VALUES (%s, %s, %s::jsonb)",
+            (request["request_id"], request["alert_id"], dump(request)),
+        )
+        self.audit(
+            "investigator",
+            "evidence_requested",
+            {"request_id": request["request_id"], "alert_id": request["alert_id"]},
+        )
+        return request
+
+    @synchronized
+    def requests_for_alert(self, alert_id):
+        rows = self._query("SELECT payload FROM evidence_requests WHERE alert_id=%s", (alert_id,))
+        return [r["payload"] for r in rows]
 
     @synchronized
     def audit(self, actor, event, payload, case_id=None):

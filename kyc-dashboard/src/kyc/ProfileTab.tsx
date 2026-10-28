@@ -15,7 +15,7 @@ function ExceptionsBox({ exceptions, onTab }: { exceptions: ProfileException[]; 
   }
   return (
     <Panel
-      title="Profile exceptions"
+      title="Profile Exceptions"
       icon={<AlertTriangle className="h-4 w-4" />}
       action={<span className="text-xs text-neutral-500">Where actual data differs from the KYC profile</span>}
     >
@@ -100,7 +100,7 @@ export default function ProfileTab({ data, exceptions, onTab }: {
           </dl>
         </Panel>
 
-        <Panel title="Verification & screening" icon={<ShieldCheck className="h-4 w-4" />}>
+        <Panel title="Verification & Screening" icon={<ShieldCheck className="h-4 w-4" />}>
           <dl className="space-y-3.5">
             <Field label="ID document">{humanize(c.id_document_type)}</Field>
             <Field label="ID verified">
@@ -122,7 +122,7 @@ export default function ProfileTab({ data, exceptions, onTab }: {
       </div>
 
       {isBusiness && (
-        <Panel title="Beneficial owners (25% or more)" icon={<Users className="h-4 w-4" />}>
+        <Panel title="Beneficial Owners (25% or More)" icon={<Users className="h-4 w-4" />}>
           {data.beneficial_owners.length === 0 ? (
             <p className="text-sm text-neutral-500">No beneficial owners recorded.</p>
           ) : (

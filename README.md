@@ -79,20 +79,9 @@ AML_OPENAI_MODEL=gpt-5-mini
 
 The provider uses the Responses API with Pydantic structured outputs and `store=False`. GPT reasoning is set to low and output is bounded for shorter waits. Investigation and semantic critique use the live model; the report assembles their cited wording without an extra model round trip. Set AML_GENERATE_NARRATIVE=true for a separately generated SAR draft. Facts and detection stay deterministic. Model calls do not hold the monitoring database lock, so status and transaction views remain responsive. Restart `./run.sh` after changing provider settings. API keys are never sent to the browser or included in case reports.
 
-## Claude and LangSmith
+## Optional tracing
 
-```bash
-cp .env.example .env
-# Edit .env:
-# AML_AGENT_MODE=claude
-# ANTHROPIC_API_KEY=...
-# AML_CLAUDE_MODEL=<a model ID enabled for your Anthropic account>
-# LANGSMITH_TRACING=true
-# LANGSMITH_API_KEY=...
-./run.sh
-```
-
-KYC, transaction, document-coverage and policy tools remain deterministic. Claude performs structured investigation, narrative drafting and semantic critique over their case file. It gets no arbitrary SQL, filesystem or network tool. Calls fail closed into an incomplete report. LangSmith uses the standard LangGraph tracing integration; enable it only for data you intend to send to that service. Live calls require your keys and are not part of the no-key test results.
+LangSmith tracing is optional. Set `LANGSMITH_TRACING=true`, `LANGSMITH_API_KEY` and `LANGSMITH_PROJECT` in the ignored `.env` file to enable it. Only enable tracing for data you intend to send to that service. Demo mode does not require API keys; live OpenAI calls require your own credentials.
 
 ## Data and persistence
 
@@ -115,9 +104,9 @@ Tests talk to the same RDS instance and write only to temporary `aml_test_*` sch
 
 ## POC boundaries
 
-This is a synthetic investigation demonstrator. Documents support structured intake, UTF-8 text, local PDF text extraction and optional Claude vision for PNG/JPEG/WebP. Model extraction is visibly classified as an observation; code compares extracted invoice IDs and amounts with transactions. Unreadable/low-confidence records stop the recommendation. Scanned-PDF OCR, authenticity checks and invoice-template forensics are not implemented. Policy retrieval uses exact triggered-pattern references from the RDS policy table, rather than a vector database or a refreshed regulatory corpus. The investigator name is an audit attribution field, not authenticated bank SSO or role enforcement. SAR narratives are drafts; nothing is filed. Do not expose the unauthenticated API publicly.
+This is a synthetic investigation demonstrator. Documents support structured intake, UTF-8 text, local PDF text extraction and optional OpenAI image extraction for PNG/JPEG/WebP. Model extraction is visibly classified as an observation; code compares extracted invoice IDs and amounts with transactions. Unreadable/low-confidence records stop the recommendation. Scanned-PDF OCR, authenticity checks and invoice-template forensics are not implemented. Policy retrieval uses exact triggered-pattern references from the RDS policy table, rather than a vector database or a refreshed regulatory corpus. The investigator name is an audit attribution field, not authenticated bank SSO or role enforcement. SAR narratives are drafts; nothing is filed. Do not expose the unauthenticated API publicly.
 
-API implementation references: [LangGraph interrupts](https://docs.langchain.com/oss/python/langgraph/interrupts), [Claude integration](https://docs.langchain.com/oss/python/integrations/chat/anthropic).
+API implementation references: [LangGraph interrupts](https://docs.langchain.com/oss/python/langgraph/interrupts).
 
 ## Interface design
 
@@ -149,3 +138,13 @@ For frontend development, run the Python API on port 8001 and `npm run dev --pre
 Build and check the UI with `npm run build --prefix kyc-dashboard` and `npm run lint --prefix kyc-dashboard`. The proxy tests in `tests/test_react_web.py` run without a database; the RDS integration tests still require the configured database. The legacy Streamlit source remains available for reference but is no longer launched.
 
 Legacy API `/kyc` links redirect to the React console. Set `AML_CONSOLE_URL` on the API if the console uses a different public address.
+
+Deployment supports `demo` and `openai` modes. The GitHub Actions workflow defaults to `demo`; set the repository variable `AML_AGENT_MODE=openai` and the `OPENAI_API_KEY` and `AML_OPENAI_MODEL` repository secrets to enable OpenAI.
+
+## Supporting document samples
+
+The synthetic PDF packets in `output/pdf/` can be uploaded in an investigation's **Documents** tab. Select only the evidence categories that the document supports, then choose **Extract and attach**. Attached documents and extracted text appear immediately. Run the investigation again from **Summary** to refresh the assessment and downloaded report.
+
+For Casa Brisa, the supporting-evidence packet covers business-location records, both deposit-to-outflow timeline categories, and beneficiary relationships. The separate evidence supplement covers depositor identity, customer explanation, the depositor-to-owner relationship, and business purpose. Its added identities and explanations are explicitly fictional test data, not verified customer records. Document coverage does not automatically clear an alert.
+
+Uploaded documents and investigation results live in the configured PostgreSQL database; they are not included in Git. After setting up a fresh local database, upload the PDFs again. Keep `.env`, API keys, and local extraction snapshots out of source control.

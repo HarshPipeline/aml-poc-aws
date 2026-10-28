@@ -24,21 +24,21 @@ export default function Monitoring() {
   return (
     <div className="page">
       <Heading
-        title="Transaction monitoring"
-        description="Monitor the Python event stream and incoming transaction activity."
+        title="Transaction Monitoring"
+        description="Review incoming transactions, alert volumes and monitoring status."
       />
       {(error || failure) && <Message error>{error || failure}</Message>}
       {s && (
         <>
           <Stats
             items={[
-              ["Stream events", `${s.stream_processed} / ${s.stream_total}`],
+              ["Transactions processed", `${s.stream_processed} / ${s.stream_total}`],
               ["Alerts", s.stream_alerts],
               ["Awaiting review", s.awaiting_review],
               ["Decisions", s.reviewed],
             ]}
           />
-          <Panel title="Stream controls">
+          <Panel title="Transaction Replay">
             <div className="flex flex-wrap items-end gap-4">
               <label>
                 Events per second
@@ -57,7 +57,7 @@ export default function Monitoring() {
                   checked={auto}
                   onChange={(e) => setAuto(e.target.checked)}
                 />
-                Build reports when stream finishes
+                Prepare assessments after replay
               </label>
               <button
                 disabled={
@@ -92,7 +92,7 @@ export default function Monitoring() {
                 : s.stream_processed === s.stream_total
                   ? "Finished"
                   : "Ready / paused"}{" "}
-              · Event clock {s.event_clock} UTC · {s.mode}
+              · Event time {s.event_clock} UTC · {human(s.mode)}
             </p>
             {s.error && <Message error>{s.error}</Message>}
           </Panel>

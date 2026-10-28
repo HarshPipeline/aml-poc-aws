@@ -27,7 +27,7 @@ aml-poc = "aml_poc.cli:main"
 include = ["aml_poc*"]
 
 [tool.setuptools.package-data]
-aml_poc = ["console.css"]
+aml_poc = ["console.css", "fixtures/evidence/**/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

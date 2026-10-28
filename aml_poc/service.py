@@ -1,5 +1,6 @@
 import copy
 import hashlib
+import logging
 import threading
 import uuid
 from datetime import datetime
@@ -48,7 +49,15 @@ class Service:
         self.engine = DetectorEngine(self.data)
         self.workflow = Workflow(self.data, self.store, self.schema, self.mode)
         self.reconcile()
+        from .packets import seed_customer_packets
+
+        seed_customer_packets(self)
         for case in self.store.all_cases():
+            if case["status"] == "investigating":
+                self._close_interrupted(
+                    case, "Investigation interrupted before it finished. Run again to continue."
+                )
+                continue
             if (
                 case["status"] == "awaiting_review"
                 and self.store.latest_case(case["alert"]["alert_id"])["case_id"] != case["case_id"]
@@ -125,11 +134,14 @@ class Service:
         return self.status()
 
     def list_alerts(self, scope="all"):
+        from .packets import customer_ask, episode_view
+
         with self.lock:
             output = []
             cases = self.store.latest_cases()
             versions = {}
-            for alert in self.store.alerts():
+            siblings = self.store.alerts()
+            for alert in siblings:
                 is_stream = any(i in self.stream_ids for i in alert["transaction_ids"])
                 if scope == "stream" and not is_stream or scope == "history" and is_stream:
                     continue
@@ -137,6 +149,7 @@ class Service:
                 if alert["customer_id"] not in versions:
                     versions[alert["customer_id"]] = self.document_version(alert["customer_id"])
                 profile = self.data.customers[alert["customer_id"]]
+                asks = customer_ask(alert, siblings, self.store)
                 output.append(
                     {
                         **alert,
@@ -145,6 +158,8 @@ class Service:
                         "case_id": case["case_id"] if case else None,
                         "case_status": case["status"] if case else "not_started",
                         "recommendation": case.get("recommendation") if case else None,
+                        "customer_ask": asks,
+                        **episode_view(alert, siblings, asks),
                         "report_stale": bool(
                             case
                             and (
@@ -202,9 +217,37 @@ class Service:
                     case_id,
                 )
             # Each store operation is serialized; model latency must not block monitoring reads.
-            result = self.workflow.run(case)
-            self.store.put_case(result)
-            return result
+            try:
+                result = self.workflow.run(case)
+                self.store.put_case(result)
+                return result
+            except Exception as error:
+                logging.getLogger(__name__).exception("Investigation interrupted")
+                try:
+                    return self._close_interrupted(
+                        case,
+                        f"Investigation interrupted ({type(error).__name__}). Run again to continue.",
+                        agent=case.get("active_agent") or "orchestrator",
+                        error_type=type(error).__name__,
+                    )
+                except Exception:
+                    logging.getLogger(__name__).exception("Could not persist interrupted investigation")
+                    case["status"] = "awaiting_review"
+                    case["completeness"] = "incomplete"
+                    return case
+
+    def _close_interrupted(self, case, detail, agent="orchestrator", error_type="Interrupted"):
+        case["status"] = "awaiting_review"
+        case["completeness"] = "incomplete"
+        case["recommendation"] = None
+        case["active_agent"] = "human_review"
+        case["missing"] = list(dict.fromkeys([*(case.get("missing") or []), detail]))
+        case["errors"] = [
+            *(case.get("errors") or []),
+            {"agent": agent, "type": error_type},
+        ]
+        self.store.put_case(case)
+        return case
 
     def document_version(self, customer_id):
         return hashlib.sha256(dump(self.store.documents(customer_id)).encode()).hexdigest()
@@ -220,6 +263,64 @@ class Service:
                     raise ValueError("Document references an unknown or different customer's transaction")
             self.store.put_document(doc)
         return doc
+
+    def document_file(self, document_id):
+        from .files import locate, media_type
+
+        with self.lock:
+            document = self.store.get_document(document_id)
+        if not document:
+            return None
+        path = locate(document)
+        if path is None:
+            return None
+        filename = document.get("file_name") or path.name
+        return path, document.get("media_type") or media_type(filename), filename
+
+    def request_customer_documents(self, alert_id):
+        from .mail import send_rfi
+        from .packets import customer_ask, episode_view
+        from .store import now as stamp
+
+        with self.lock:
+            alert = self.store.get_alert(alert_id)
+            if not alert:
+                raise ValueError("Unknown alert")
+            existing = self.store.requests_for_alert(alert_id)
+            if existing:
+                return existing[0]
+            siblings = self.store.alerts()
+            asks = customer_ask(alert, siblings, self.store)
+            outstanding = [item for item in asks if item["status"] != "received"]
+            if not outstanding:
+                raise ValueError("The customer has already submitted the requested documents")
+            profile = self.data.customers[alert["customer_id"]]
+            customer_name = profile.get("business_name") or profile.get("fake_name") or alert["customer_id"]
+            episode = episode_view(alert, siblings, asks).get("episode_label") or ""
+            account_id = profile.get("account_id") or ""
+        mail = send_rfi(
+            customer_name,
+            alert["customer_id"],
+            alert_id,
+            outstanding,
+            alert=alert,
+            account_id=account_id,
+            episode_label=episode,
+        )
+        with self.lock:
+            return self.store.put_request(
+                {
+                    "request_id": "RFI-" + alert_id,
+                    "alert_id": alert_id,
+                    "customer_id": alert["customer_id"],
+                    "status": "sent",
+                    "channel": "email" if mail["sent"] else "case_file",
+                    "created_at": stamp(),
+                    "artifacts": outstanding,
+                    "email": mail,
+                    "note": mail["detail"],
+                }
+            )
 
     def add_demo_packet(self, alert_id, complete=True, resolution="unresolved"):
         with self.lock:

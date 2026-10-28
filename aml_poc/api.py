@@ -135,6 +135,18 @@ def create_app(service=None):
     def review(request: Request, alert_id: str, body: ReviewDecision):
         return svc(request).review(alert_id, body.model_dump())
 
+    @app.post("/alerts/{alert_id}/request-documents")
+    def request_documents(request: Request, alert_id: str):
+        return svc(request).request_customer_documents(alert_id)
+
+    @app.get("/alerts/{alert_id}/document-requests")
+    def document_requests(request: Request, alert_id: str):
+        service = svc(request)
+        with service.lock:
+            if not service.store.get_alert(alert_id):
+                raise HTTPException(404, "Alert not found")
+            return service.store.requests_for_alert(alert_id)
+
     @app.post("/alerts/{alert_id}/demo-packet")
     def packet(
         request: Request,
@@ -142,6 +154,32 @@ def create_app(service=None):
         resolution: Literal["unresolved", "documented_legitimate"] = "unresolved",
     ):
         return svc(request).add_demo_packet(alert_id, resolution=resolution)
+
+    @app.get("/alerts/{alert_id}/documents")
+    def alert_documents(request: Request, alert_id: str):
+        service = svc(request)
+        with service.lock:
+            alert = service.store.get_alert(alert_id)
+            if not alert:
+                raise HTTPException(404, "Alert not found")
+            from .files import viewable
+
+            return [
+                {**doc, "viewable": viewable(doc)}
+                for doc in service.store.documents(alert["customer_id"])
+                if not doc.get("transaction_ids")
+                or set(doc["transaction_ids"]).intersection(alert["transaction_ids"])
+            ]
+
+    @app.get("/documents/{document_id}/file")
+    def document_file(request: Request, document_id: str):
+        from fastapi.responses import FileResponse
+
+        found = svc(request).document_file(document_id)
+        if not found:
+            raise HTTPException(404, "Original file is not available")
+        path, media, filename = found
+        return FileResponse(path, media_type=media, filename=filename)
 
     @app.post("/documents")
     def document(request: Request, body: EvidenceDocument):
@@ -229,6 +267,9 @@ def create_app(service=None):
 
     @app.exception_handler(psycopg.OperationalError)
     async def database_unavailable(request, error):
+        import logging
+
+        logging.getLogger(__name__).exception("RDS operational error")
         return JSONResponse(
             status_code=503,
             content={
