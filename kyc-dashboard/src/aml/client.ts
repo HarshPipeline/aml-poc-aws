@@ -21,6 +21,37 @@ export async function request<T = any>(
   return data as T;
 }
 
+function isGatewayTimeout(error: Error) {
+  return /504|502|503|timeout|failed to fetch/i.test(error.message);
+}
+
+export async function waitForCase(alertId: string, onUpdate?: (current: any) => void) {
+  const started = Date.now();
+  while (Date.now() - started < 240000) {
+    const current = await request(`/alerts/${alertId}/case`);
+    onUpdate?.(current);
+    if (!current || current.status !== "investigating") return current;
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+  throw new Error("Investigation is still running. Refresh the page in a moment.");
+}
+
+export async function runInvestigation(
+  alertId: string,
+  body: Record<string, unknown> = {},
+  onUpdate?: (current: any) => void,
+) {
+  let started: any = null;
+  try {
+    started = await request(`/alerts/${alertId}/investigate`, body);
+    onUpdate?.(started);
+    if (started?.status !== "investigating") return started;
+  } catch (error) {
+    if (!isGatewayTimeout(error as Error)) throw error;
+  }
+  return waitForCase(alertId, onUpdate);
+}
+
 export function useData<T = any>(path: string, interval = 0) {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState("");

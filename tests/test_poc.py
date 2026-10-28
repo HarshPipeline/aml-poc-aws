@@ -1,5 +1,7 @@
 import copy
 import os
+import threading
+import time
 import uuid
 from datetime import datetime, timedelta
 
@@ -352,6 +354,34 @@ def test_model_exception_fails_closed(service):
         service.workflow.model = None
 
 
+def test_start_investigation_returns_before_model_finishes(service):
+    started, release = threading.Event(), threading.Event()
+    alert = next(a for a in service.list_alerts() if a["family"] == "TM-01")
+    original = service.workflow.run
+
+    def slow(case):
+        started.set()
+        release.wait(10)
+        return original(case)
+
+    service.workflow.run = slow
+    try:
+        begin = time.monotonic()
+        case = service.start_investigation(alert["alert_id"], force=True)
+        assert time.monotonic() - begin < 1
+        assert case["status"] == "investigating"
+        assert started.wait(5)
+        assert service.store.latest_case(alert["alert_id"])["status"] == "investigating"
+    finally:
+        release.set()
+        for _ in range(50):
+            if service.store.latest_case(alert["alert_id"])["status"] != "investigating":
+                break
+            time.sleep(0.1)
+        service.workflow.run = original
+    assert service.store.latest_case(alert["alert_id"])["status"] == "awaiting_review"
+
+
 def test_investigate_failure_does_not_leave_case_running(service, monkeypatch):
     alert = next(a for a in service.list_alerts("all") if a["family"] == "TM-01")
 
@@ -459,6 +489,7 @@ def test_monitoring_reads_stay_responsive_during_model_calls(service):
 
     started, release = threading.Event(), threading.Event()
     alert = next(a for a in service.list_alerts() if a["family"] == "TM-01")
+    service.add_demo_packet(alert["alert_id"])
 
     class WaitingModel:
         def with_structured_output(self, schema):
@@ -500,6 +531,12 @@ def test_api_validation_and_reports(service):
         )
         assert response.status_code == 200
         case = response.json()
+        for _ in range(50):
+            if case.get("status") != "investigating":
+                break
+            time.sleep(0.1)
+            case = client.get(f"/alerts/{alert['alert_id']}/case").json()
+        assert case["status"] == "awaiting_review"
         assert client.get(f"/cases/{case['case_id']}/report").status_code == 200
 
 

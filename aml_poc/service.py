@@ -48,6 +48,7 @@ class Service:
         )
         self.engine = DetectorEngine(self.data)
         self.workflow = Workflow(self.data, self.store, self.schema, self.mode)
+        self._running = set()
         self.reconcile()
         from .packets import seed_customer_packets
 
@@ -172,51 +173,73 @@ class Service:
             return sorted(output, key=lambda a: a["detected_at"], reverse=True)
 
     def investigate(self, alert_id, failure="none", force=False):
+        case = self._begin_investigation(alert_id, failure, force)
+        if case.get("status") != "investigating":
+            return case
+        return self._finish_investigation(case)
+
+    def start_investigation(self, alert_id, failure="none", force=False):
+        case = self._begin_investigation(alert_id, failure, force)
+        if case.get("status") == "investigating" and case["case_id"] not in self._running:
+            self._running.add(case["case_id"])
+            threading.Thread(
+                target=self._run_background,
+                args=(case,),
+                daemon=True,
+                name=f"investigate-{case['case_id']}",
+            ).start()
+        return case
+
+    def _begin_investigation(self, alert_id, failure="none", force=False):
+        with self.lock:
+            alert = self.store.get_alert(alert_id)
+            if not alert:
+                raise ValueError("Unknown alert")
+            previous = self.store.latest_case(alert_id)
+            if previous and previous["status"] == "investigating":
+                return previous
+            if (
+                previous
+                and not force
+                and failure == "none"
+                and previous["alert"]["revision"] == alert["revision"]
+                and previous["mode"] == self.mode
+                and previous["document_version"] == self.document_version(alert["customer_id"])
+                and previous["status"] in {"reviewed", "awaiting_review"}
+            ):
+                return previous
+            case_id = f"CASE-{alert_id[4:]}-R{alert['revision']}-{uuid.uuid4().hex[:6]}"
+            if previous and previous["status"] == "awaiting_review":
+                previous["status"] = "superseded"
+                self.store.put_case(previous)
+            case = {
+                "case_id": case_id,
+                "alert": copy.deepcopy(alert),
+                "as_of": self.clock.isoformat(),
+                "mode": self.mode,
+                "created_at": now(),
+                "status": "investigating",
+                "active_agent": "orchestrator",
+                "failure": failure,
+                "evidence": [],
+                "missing": [],
+                "errors": [],
+                "steps": [],
+                "decision": None,
+                "recommendation": None,
+                "document_version": self.document_version(alert["customer_id"]),
+            }
+            self.store.put_case(case)
+            self.store.audit(
+                "orchestrator",
+                "investigation_started",
+                {"alert_revision": alert["revision"], "mode": self.mode, "failure_simulation": failure},
+                case_id,
+            )
+            return case
+
+    def _finish_investigation(self, case):
         with self.graph_lock:
-            with self.lock:
-                alert = self.store.get_alert(alert_id)
-                if not alert:
-                    raise ValueError("Unknown alert")
-                previous = self.store.latest_case(alert_id)
-                if (
-                    previous
-                    and not force
-                    and failure == "none"
-                    and previous["alert"]["revision"] == alert["revision"]
-                    and previous["mode"] == self.mode
-                    and previous["document_version"] == self.document_version(alert["customer_id"])
-                    and previous["status"] in {"reviewed", "awaiting_review"}
-                ):
-                    return previous
-                case_id = f"CASE-{alert_id[4:]}-R{alert['revision']}-{uuid.uuid4().hex[:6]}"
-                if previous and previous["status"] in {"awaiting_review", "investigating"}:
-                    previous["status"] = "superseded"
-                    self.store.put_case(previous)
-                case = {
-                    "case_id": case_id,
-                    "alert": copy.deepcopy(alert),
-                    "as_of": self.clock.isoformat(),
-                    "mode": self.mode,
-                    "created_at": now(),
-                    "status": "investigating",
-                    "active_agent": "orchestrator",
-                    "failure": failure,
-                    "evidence": [],
-                    "missing": [],
-                    "errors": [],
-                    "steps": [],
-                    "decision": None,
-                    "recommendation": None,
-                    "document_version": self.document_version(alert["customer_id"]),
-                }
-                self.store.put_case(case)
-                self.store.audit(
-                    "orchestrator",
-                    "investigation_started",
-                    {"alert_revision": alert["revision"], "mode": self.mode, "failure_simulation": failure},
-                    case_id,
-                )
-            # Each store operation is serialized; model latency must not block monitoring reads.
             try:
                 result = self.workflow.run(case)
                 self.store.put_case(result)
@@ -235,6 +258,12 @@ class Service:
                     case["status"] = "awaiting_review"
                     case["completeness"] = "incomplete"
                     return case
+
+    def _run_background(self, case):
+        try:
+            self._finish_investigation(case)
+        finally:
+            self._running.discard(case["case_id"])
 
     def _close_interrupted(self, case, detail, agent="orchestrator", error_type="Interrupted"):
         case["status"] = "awaiting_review"
