@@ -4,7 +4,7 @@ import { Panel, Badge } from "../components/ui";
 import CustomerKyc from "../pages/CustomerKyc";
 import Evidence from "./Evidence";
 import SummaryRun from "./SummaryRun";
-import { request, useData, usd, human, scenario, download, episodeWindow, documentsLabel } from "./client";
+import { request, runInvestigation, useData, usd, human, scenario, download, episodeWindow, documentsLabel } from "./client";
 import { Heading, Message, Facts, Json } from "./shared";
 
 export default function Investigation() {
@@ -45,7 +45,7 @@ export default function Investigation() {
     setBusy(true);
     setFailure("");
     try {
-      await request(`/alerts/${alertId}/investigate`, { force, failure });
+      await runInvestigation(alertId, { force, failure });
       refresh();
     } catch (e) {
       setFailure((e as Error).message);

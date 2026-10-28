@@ -1,7 +1,7 @@
 import { titleCase } from "../utils/titleCase";
 import { useEffect, useRef, useState } from "react";
 import { Check, LoaderCircle, Sparkles, AlertCircle, Search, X, FileCheck2 } from "lucide-react";
-import { request, useData } from "./client";
+import { runInvestigation, useData } from "./client";
 const stages = [
   ["orchestrator", "Collecting evidence", "Gathering the flagged activity and setting the investigation scope."],
   ["kyc", "Checking customer details", "Reviewing KYC, business activity and the expected account behavior."],
@@ -43,10 +43,10 @@ export default function SummaryRun({alertId, report, stale, onFinished}: {alertI
     setPrevious(report?.case_id ?? null);setPending(true);setResult(null);setFailure("");setPlayback(null);
     const started=Date.now();
     try {
-      const next=await request(`/alerts/${alertId}/investigate`,{force:!!report});
+      const next=await runInvestigation(alertId,{force:!!report},setResult);
       setResult(next);
       // Fast runs show an explicitly labeled playback of recorded steps, never fabricated live progress.
-      if(Date.now()-started<2000 && next.steps?.length) setPlayback(0);
+      if(Date.now()-started<2000 && next?.steps?.length) setPlayback(0);
     } catch(e) {setFailure((e as Error).message);}
     finally {setPending(false);onFinished();}
   }

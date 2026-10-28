@@ -116,7 +116,7 @@ def create_app(service=None):
 
     @app.post("/alerts/{alert_id}/investigate")
     def investigate(request: Request, alert_id: str, body: InvestigationRequest):
-        return svc(request).investigate(alert_id, **body.model_dump())
+        return svc(request).start_investigation(alert_id, **body.model_dump())
 
     @app.get("/alerts/{alert_id}/case")
     def case(request: Request, alert_id: str):
