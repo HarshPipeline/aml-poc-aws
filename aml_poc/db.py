@@ -18,7 +18,7 @@ def checked_schema(name):
 
 
 def connect(read_only=False, schema=None, autocommit=True, row_factory=dict_row, **kwargs):
-    options = ["-c statement_timeout=15000"]
+    options = ["-c statement_timeout=120000"]
     if read_only:
         options.append("-c default_transaction_read_only=on")
     if schema:
@@ -34,6 +34,10 @@ def connect(read_only=False, schema=None, autocommit=True, row_factory=dict_row,
         password=os.environ["DB_PASSWORD"],
         sslmode=os.environ.get("DB_SSLMODE", "require"),
         connect_timeout=10,
+        keepalives=1,
+        keepalives_idle=30,
+        keepalives_interval=10,
+        keepalives_count=5,
         options=" ".join(options),
         autocommit=autocommit,
         row_factory=row_factory,

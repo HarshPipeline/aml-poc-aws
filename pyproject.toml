@@ -12,7 +12,7 @@ dependencies = [
   "streamlit>=1.45,<2", "pandas>=2.2,<3", "requests>=2.32,<3",
   "pydantic>=2.10,<3", "python-dotenv>=1,<2",
   "langgraph>=1.0,<2", "langgraph-checkpoint-postgres>=3,<4",
-  "langsmith>=0.4,<1",
+  "langchain-anthropic>=1,<2", "langsmith>=0.4,<1",
   "pypdf>=5,<7", "python-multipart>=0.0.20,<1",
   "openai>=2,<3", "psycopg[binary]>=3.2,<4",
 ]
@@ -27,7 +27,7 @@ aml-poc = "aml_poc.cli:main"
 include = ["aml_poc*"]
 
 [tool.setuptools.package-data]
-aml_poc = ["console.css"]
+aml_poc = ["console.css", "fixtures/evidence/**/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

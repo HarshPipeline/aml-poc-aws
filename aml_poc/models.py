@@ -43,7 +43,9 @@ class Assessment(BaseModel):
     summary: str = Field(min_length=1)
     summary_evidence_ids: list[str] = Field(min_length=1)
     findings: list[Finding] = Field(min_length=1)
-    innocent_explanation: str
+    innocent_explanation: str = ""
+    observed: str = ""
+    next_step: str = ""
     recommendation: Literal["clear", "request_info", "escalate"]
 
 
@@ -76,9 +78,18 @@ class EvidenceDocument(BaseModel):
     transaction_ids: list[str] = Field(default_factory=list)
     readable: bool = True
     extraction_confidence: float = Field(default=1, ge=0, le=1)
-    origin: Literal["investigator_supplied", "synthetic_fixture", "model_extraction", "pdf_text"] = (
-        "investigator_supplied"
-    )
+    origin: Literal[
+        "investigator_supplied",
+        "customer_supplied",
+        "synthetic_fixture",
+        "model_extraction",
+        "pdf_text",
+    ] = "investigator_supplied"
+    artifact_type: Literal["", "letter", "invoice", "check"] = ""
+    submitted_by: Literal["customer", "investigator", "system"] = "investigator"
+    file_name: str = ""
+    media_type: str = ""
+    source_relative: str = ""
     source_sha256: str | None = None
     extracted_fields: dict = Field(default_factory=dict)
     demonstration_resolution: Literal["unresolved", "documented_legitimate"] = "unresolved"

@@ -73,7 +73,7 @@ def alerts(scope="all"):
 
 
 header_status = api("/status") or {}
-model_label = {"openai": "OpenAI API"}.get(
+model_label = {"openai": "OpenAI API", "claude": "Claude API"}.get(
     header_status.get("mode"), "Rules-based demo"
 )
 
@@ -485,7 +485,7 @@ def workbench():
                         ),
                         (
                             "Assessment mode",
-                            {"openai": "OpenAI API"}.get(
+                            {"openai": "OpenAI API", "claude": "Claude API"}.get(
                                 case["mode"], "Deterministic demo"
                             ),
                         ),

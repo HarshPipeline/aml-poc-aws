@@ -291,7 +291,12 @@ def test_document_upload_text_and_blank_pdf(service):
 
     from pypdf import PdfWriter
 
-    alert = next(a for a in service.list_alerts() if a["family"] == "TM-09")
+    alert = next(
+        a
+        for a in service.list_alerts()
+        if a["evidence_required"]
+        and not any(item.get("status") == "received" for item in a.get("customer_ask") or [])
+    )
     with TestClient(create_app(service)) as client:
         response = client.post(
             "/documents/extract",
@@ -330,6 +335,7 @@ def test_document_upload_text_and_blank_pdf(service):
 
 def test_model_exception_fails_closed(service):
     alert = next(a for a in service.list_alerts() if a["family"] == "TM-01")
+    service.add_demo_packet(alert["alert_id"])
 
     class UnavailableModel:
         def with_structured_output(self, schema):
@@ -346,11 +352,27 @@ def test_model_exception_fails_closed(service):
         service.workflow.model = None
 
 
+def test_investigate_failure_does_not_leave_case_running(service, monkeypatch):
+    alert = next(a for a in service.list_alerts("all") if a["family"] == "TM-01")
+
+    def boom(case):
+        raise RuntimeError("simulated disconnect")
+
+    monkeypatch.setattr(service.workflow, "run", boom)
+    result = service.investigate(alert["alert_id"], force=True)
+    assert result["status"] == "awaiting_review"
+    assert result["status"] != "investigating"
+    assert any("interrupted" in item.lower() for item in result["missing"])
+    loaded = service.store.latest_case(alert["alert_id"])
+    assert loaded["status"] == "awaiting_review"
+
+
 def test_unsupported_model_claims_retry_then_reach_human(service):
     from aml_poc.models import Assessment
     from aml_poc.workflow import Critique, Narrative
 
     alert = next(a for a in service.list_alerts() if a["family"] == "TM-01")
+    service.add_demo_packet(alert["alert_id"])
 
     class UngroundedModel:
         def with_structured_output(self, schema):
@@ -360,10 +382,12 @@ def test_unsupported_model_claims_retry_then_reach_human(service):
         def invoke(self, messages):
             if self.schema is Assessment:
                 return Assessment(
-                    summary="Synthetic assessment",
+                    summary="Assessment of the case file",
                     summary_evidence_ids=["E1"],
                     findings=[{"text": "Amount is 99999999999999", "evidence_ids": ["E1"]}],
                     innocent_explanation="A documented sale may explain the activity.",
+                    observed="The cited amount is not in the case file.",
+                    next_step="Escalate for supervisor review.",
                     recommendation="escalate",
                 )
             if self.schema is Narrative:
@@ -377,6 +401,54 @@ def test_unsupported_model_claims_retry_then_reach_human(service):
         assert case["recommendation"] is None
         assert case["status"] == "awaiting_review"
         assert not case["critic"]["passed"]
+        assert case["findings"]
+        assert case["findings"][0]["evidence_ids"] == ["E1"]
+    finally:
+        service.workflow.model = None
+
+
+def test_retry_timeout_keeps_findings_and_verdict(service):
+    from aml_poc.models import Assessment
+    from aml_poc.workflow import Critique, Narrative
+
+    alert = next(a for a in service.list_alerts() if a["family"] == "TM-01")
+    service.add_demo_packet(alert["alert_id"])
+
+    class RetryThenTimeout:
+        def __init__(self):
+            self.assessments = 0
+
+        def with_structured_output(self, schema):
+            self.schema = schema
+            return self
+
+        def invoke(self, messages):
+            if self.schema is Assessment:
+                self.assessments += 1
+                if self.assessments > 1:
+                    raise TimeoutError("synthetic timeout")
+                return Assessment(
+                    summary="Assessment of the case file",
+                    summary_evidence_ids=["E1"],
+                    findings=[{"text": "Amount is 99999999999999", "evidence_ids": ["E1"]}],
+                    innocent_explanation="A documented sale may explain the activity.",
+                    observed="The cited amount is not in the case file.",
+                    next_step="Escalate for supervisor review.",
+                    recommendation="escalate",
+                )
+            if self.schema is Narrative:
+                return Narrative(sentences=[{"text": "Amount is 99999999999999", "evidence_ids": ["E1"]}])
+            return Critique(defects=[])
+
+    service.workflow.model = RetryThenTimeout()
+    try:
+        case = service.investigate(alert["alert_id"], force=True)
+        assert case["findings"]
+        assert case["findings"][0]["evidence_ids"] == ["E1"]
+        assert case["recommendation"] == "escalate"
+        assert case["observed"]
+        assert not any("failed" in item.lower() for item in case["missing"])
+        assert case["status"] == "awaiting_review"
     finally:
         service.workflow.model = None
 
@@ -469,3 +541,49 @@ def test_entire_stream_and_durable_restart(dataset, schemas):
     svc = Service(dataset, name, "demo")
     assert svc.status()["event_clock"] == "2099-01-01T00:00:00"
     svc.close()
+
+
+def _first_then_later(alerts, customer_id, family):
+    rows = sorted(
+        [a for a in alerts if a["customer_id"] == customer_id and a["family"] == family],
+        key=lambda a: a["window_start"],
+    )
+    assert rows
+    assert rows[0]["episode_index"] == 1
+    assert any(item["status"] == "received" for item in rows[0]["customer_ask"])
+    for later in rows[1:]:
+        assert all(item["status"] != "received" for item in later["customer_ask"])
+    return rows
+
+
+def test_customer_packets_seed_and_request_remaining(service, monkeypatch):
+    monkeypatch.delenv("SMTP_PASSWORD", raising=False)
+    alerts = service.list_alerts("all")
+    casa = sorted(
+        [a for a in alerts if a["customer_id"] == "C002" and a["family"] == "TM-03"],
+        key=lambda a: a["window_start"],
+    )
+    assert len(casa) >= 2
+    assert any(item["status"] == "received" and item["artifact_type"] == "check" for item in casa[0]["customer_ask"])
+    assert any(item["status"] == "received" and item["artifact_type"] == "check" for item in casa[1]["customer_ask"])
+    for later in casa[2:]:
+        assert all(item["status"] != "received" for item in later["customer_ask"])
+    docs = [d for d in service.store.documents("C002") if d.get("submitted_by") == "customer"]
+    assert docs and all(d["origin"] == "customer_supplied" for d in docs)
+    assert any("3871" in d["content"] or "TXN-000532" in d["content"] for d in docs)
+    assert any("3886" in d["content"] or "TXN-001406" in d["content"] for d in docs)
+    assert all("new_E" in (d.get("source_relative") or "") for d in docs)
+    assert any("ep2-" in (d.get("source_relative") or "") for d in docs)
+    original = service.document_file(docs[0]["document_id"])
+    assert original and original[0].is_file()
+    sunnyvale = _first_then_later(alerts, "C001", "TM-01")
+    assert sunnyvale[0]["episode_label"] == f"Episode 1 of {len(sunnyvale)}"
+    _first_then_later(alerts, "C003", "TM-07")
+    _first_then_later(alerts, "C004", "TM-09")
+    if len(sunnyvale) > 1:
+        later = sunnyvale[1]
+        recorded = service.request_customer_documents(later["alert_id"])
+        assert recorded["status"] == "sent"
+        assert recorded["email"]["sent"] is False
+        again = next(a for a in service.list_alerts("all") if a["alert_id"] == later["alert_id"])
+        assert all(item["status"] in {"requested", "received"} for item in again["customer_ask"])

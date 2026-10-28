@@ -50,8 +50,19 @@ jobs:
               {"name":"DB_PASSWORD","value":"${{ secrets.DB_PASSWORD }}"},
               {"name":"DB_SSLMODE","value":"require"},
               {"name":"AML_APP_SCHEMA","value":"aml_app"},
-              {"name":"AML_AGENT_MODE","value":"${{ vars.AML_AGENT_MODE || 'demo' }}"},
+              {"name":"AML_AGENT_MODE","value":"claude"},
               {"name":"AML_SERVE_CONSOLE","value":"true"},
+              {"name":"ANTHROPIC_API_KEY","value":"${{ secrets.ANTHROPIC_API_KEY }}"},
+              {"name":"AML_CLAUDE_MODEL","value":"${{ secrets.AML_CLAUDE_MODEL }}"},
               {"name":"OPENAI_API_KEY","value":"${{ secrets.OPENAI_API_KEY }}"},
-              {"name":"AML_OPENAI_MODEL","value":"${{ secrets.AML_OPENAI_MODEL }}"}
+              {"name":"AML_OPENAI_MODEL","value":"${{ secrets.AML_OPENAI_MODEL }}"},
+              {"name":"LANGSMITH_TRACING","value":"true"},
+              {"name":"LANGSMITH_API_KEY","value":"${{ secrets.LANGSMITH_API_KEY }}"},
+              {"name":"LANGSMITH_PROJECT","value":"${{ secrets.LANGSMITH_PROJECT }}"},
+              {"name":"SMTP_HOST","value":"smtp.gmail.com"},
+              {"name":"SMTP_PORT","value":"587"},
+              {"name":"SMTP_USER","value":"${{ secrets.SMTP_USER }}"},
+              {"name":"SMTP_FROM","value":"${{ secrets.SMTP_FROM }}"},
+              {"name":"SMTP_TO","value":"${{ secrets.SMTP_TO }}"},
+              {"name":"SMTP_PASSWORD","value":"${{ secrets.SMTP_PASSWORD }}"}
             ]

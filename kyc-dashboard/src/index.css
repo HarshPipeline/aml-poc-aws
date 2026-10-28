@@ -65,9 +65,10 @@ body {font-size:14px;line-height:1.5;color:#ededed}
 .page>header h1 {font-size:26px;font-weight:600;letter-spacing:-.025em;line-height:1.3}
 .queue-table th {color:#a3a3a3;font-size:12px;font-weight:600}
 .queue-table td {line-height:1.6;vertical-align:middle}
-.queue-table td:first-child {width:30%}.queue-table td:nth-child(2){width:24%}
+.queue-table td:first-child {width:22%}.queue-table td:nth-child(2){width:18%}
 .queue-table td:nth-child(3) {white-space:nowrap}
-.queue-table td:nth-child(4) {white-space:normal}
+.queue-table td:nth-child(4) {white-space:nowrap}
+.queue-table td:nth-child(6) {white-space:normal}
 .queue-table td:last-child {width:1%;white-space:nowrap}
 @media(min-width:701px) and (max-width:1100px){.queue-table th,.queue-table td{padding-left:12px;padding-right:12px}.queue-table .customer-link{font-size:13px}.queue-table td{font-size:12px}}
 .queue-summary span {color:#b5b5b5}.queue-summary strong {font-variant-numeric:tabular-nums}

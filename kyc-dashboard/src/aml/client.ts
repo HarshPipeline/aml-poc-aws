@@ -63,10 +63,26 @@ export const usd = (n: unknown) =>
     style: "currency",
     currency: "USD",
   });
+export const episodeWindow = (start?: string, end?: string) => {
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const part = (iso: string) => {
+    const [year, month, day] = iso.slice(0, 10).split("-").map(Number);
+    if (!year || !month || !day) return "";
+    return { year, month, day, label: `${day} ${months[month - 1]} ${year}` };
+  };
+  if (!start || !end) return "";
+  const from = part(start);
+  const to = part(end);
+  if (!from || !to) return "";
+  if (from.year === to.year && from.month === to.month) return `${from.day}–${to.label}`;
+  return `${from.label} – ${to.label}`;
+};
+export const documentsLabel = (status?: string) =>
+  status === "received" ? "Documents received" : status === "requested" ? "Requested" : "Request documents";
 const displayLabels: Record<string, string> = {
   not_started: "Not started", awaiting_review: "Awaiting review", reviewed: "Reviewed",
   request_info: "Request information", clear: "Close alert", escalate: "Escalate",
-  kyc: "KYC", sar: "SAR", openai: "OpenAI", demo: "Demo",
+  kyc: "KYC", sar: "SAR", openai: "OpenAI", claude: "Claude", demo: "Demo",
   ach: "ACH", ach_in: "ACH credit", ach_out: "ACH debit",
 };
 export const human = (s: unknown) => {

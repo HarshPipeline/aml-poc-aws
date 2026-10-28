@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "../components/ui";
-import { useData, scenario, download } from "./client";
+import { useData, scenario, download, usd, episodeWindow, documentsLabel } from "./client";
 import { Heading, Message } from "./shared";
 
 export default function Queue() {
   const { data, error, loading, reload } = useData<any[]>("/alerts", 5000);
   const [search, setSearch] = useState("");
-  const [scope, setScope] = useState("stream");
+  const [scope, setScope] = useState("all");
   const [priority, setPriority] = useState("all");
   const [view, setView] = useState("open");
   const all = (data ?? []).filter(r => scope === "all" || r.source === scope);
@@ -16,7 +16,13 @@ export default function Queue() {
     (view === "all" || (view === "open" ? r.case_status !== "reviewed" : r.case_status === "reviewed")) &&
     (priority === "all" || r.priority === priority) &&
     `${r.customer_name} ${r.customer_id} ${r.alert_id}`.toLowerCase().includes(search.toLowerCase())
-  ).sort((a,b) => ["high","medium","low"].indexOf(a.priority) - ["high","medium","low"].indexOf(b.priority));
+  ).sort((a,b) => {
+    const rank = ["high","medium","low"].indexOf(a.priority) - ["high","medium","low"].indexOf(b.priority);
+    if (rank) return rank;
+    const name = String(a.customer_name ?? "").localeCompare(String(b.customer_name ?? ""));
+    if (name) return name;
+    return (a.episode_index ?? 0) - (b.episode_index ?? 0);
+  });
   return <div className="page queue-page">
     <Heading title="Investigations" description="Review alerts, assess supporting evidence and record investigation outcomes." />
     {error && <Message error>{error} <button className="secondary ml-3" onClick={reload}>Retry</button></Message>}
@@ -39,10 +45,12 @@ export default function Queue() {
       </details>
     </div>
     <div className="table-panel queue-table"><table>
-      <thead><tr><th>Customer</th><th>Alert category</th><th>Priority</th><th>Required action</th><th><span className="sr-only">Open investigation</span></th></tr></thead>
+      <thead><tr><th>Customer</th><th>Episode</th><th>Amount</th><th>Documents</th><th>Priority</th><th>Required action</th><th><span className="sr-only">Open investigation</span></th></tr></thead>
       <tbody>{rows.map(r=><tr key={r.alert_id}>
-        <td><Link className="customer-link" to={`/investigations/${r.alert_id}`}>{r.customer_name}</Link><p className="mt-1 text-xs text-neutral-500">{r.alert_id}</p></td>
-        <td>{scenario(r.pattern_ids)}{r.signal_status === "provisional" && <p className="text-xs text-amber-300">Provisional signal</p>}{r.signal_status === "withdrawn" && <p className="text-xs text-neutral-400">Withdrawn signal</p>}</td>
+        <td><Link className="customer-link" to={`/investigations/${r.alert_id}`}>{r.customer_name}</Link><p className="mt-1 text-xs text-neutral-500">{scenario(r.pattern_ids)}</p></td>
+        <td><p>{r.episode_label ?? "Episode 1"}</p><p className="mt-1 text-xs text-neutral-500">{episodeWindow(r.window_start, r.window_end)}</p></td>
+        <td className="whitespace-nowrap">{usd(r.amount)}</td>
+        <td><Badge tone={r.documents_status === "received" ? "green" : r.documents_status === "requested" ? "amber" : "neutral"}>{documentsLabel(r.documents_status)}</Badge></td>
         <td><span className={`priority-dot ${r.priority}`} />{r.priority === "high" ? "High" : r.priority === "medium" ? "Medium" : "Low"}</td>
         <td>{r.report_stale ? <Badge tone="amber">Update report</Badge> : r.case_status === "reviewed" ? "Decision recorded" : r.case_status === "awaiting_review" ? "Review assessment" : "Start investigation"}</td>
         <td><Link className="open-case" to={`/investigations/${r.alert_id}`}>Review <span aria-hidden="true">→</span></Link></td>

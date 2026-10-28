@@ -4,7 +4,7 @@ import { Panel, Badge } from "../components/ui";
 import CustomerKyc from "../pages/CustomerKyc";
 import Evidence from "./Evidence";
 import SummaryRun from "./SummaryRun";
-import { request, useData, usd, human, scenario, download } from "./client";
+import { request, useData, usd, human, scenario, download, episodeWindow, documentsLabel } from "./client";
 import { Heading, Message, Facts, Json } from "./shared";
 
 export default function Investigation() {
@@ -88,7 +88,11 @@ export default function Investigation() {
       <div className="mt-4">
         <Heading
           title={a?.customer_name ?? "Investigation"}
-          description={a ? scenario(a.pattern_ids) : "Assess the customer profile and supporting evidence."}
+          description={
+            a
+              ? `${scenario(a.pattern_ids)} · ${a.episode_label ?? "Episode 1"}${episodeWindow(a.window_start, a.window_end) ? ` · ${episodeWindow(a.window_start, a.window_end)}` : ""}`
+              : "Assess the customer profile and supporting evidence."
+          }
         />
       </div>
       {(error || caseError || failure) && (
@@ -106,13 +110,18 @@ export default function Investigation() {
             </div>
             <div className="flex gap-2">
               <Badge tone={a.priority === "high" ? "red" : a.priority === "medium" ? "amber" : "neutral"}>{human(a.priority)} priority</Badge>
+              <Badge tone={a.documents_status === "received" ? "green" : a.documents_status === "requested" ? "amber" : "neutral"}>{documentsLabel(a.documents_status)}</Badge>
               {a.signal_status !== "confirmed" && <Badge>{human(a.signal_status)}</Badge>}
             </div>
           </div>
-          <div className="mb-5 grid grid-cols-3 gap-4 rounded-xl border border-line bg-panel p-4">
+          <div className="mb-5 grid grid-cols-2 gap-4 rounded-xl border border-line bg-panel p-4 md:grid-cols-4">
             <div>
-              <small>Evidence value</small>
+              <small>Episode amount</small>
               <p>{usd(a.amount)}</p>
+            </div>
+            <div>
+              <small>Episode</small>
+              <p>{a.episode_label ?? "Episode 1"}</p>
             </div>
             <div>
               <small>Transactions</small>
@@ -142,7 +151,7 @@ export default function Investigation() {
             <CustomerKyc customerIdOverride={a.customer_id} />
           )}
           {tab === "Overview" && report && report.status !== "investigating" && !report.decision && !a.report_stale && (
-            <div className="next-step"><div><strong>{report.completeness === "complete" ? `Suggested action: ${human(report.recommendation)}` : "Additional evidence required"}</strong><p>{report.completeness === "complete" ? "Read the summary, check the evidence, then record your decision." : "A recommendation requires additional evidence. Attach supporting documents or request information."}</p></div><button className="primary" onClick={() => setParams({section: report.completeness === "complete" ? "Decision" : "Documents"})}>{report.completeness === "complete" ? "Review decision" : "Add documents"} →</button></div>
+            <div className="next-step"><div><strong>{report.completeness === "complete" ? `Suggested action: ${human(report.recommendation)}` : "Additional evidence required"}</strong><p>{report.completeness === "complete" ? "Read the summary, check the evidence, then record your decision." : (a.customer_ask ?? []).filter((item: {status: string}) => item.status !== "received").map((item: {title: string}) => item.title).join("; ") || "A recommendation requires additional evidence. Request the listed documents from the customer."}</p></div><button className="primary" onClick={() => setParams({section: report.completeness === "complete" ? "Decision" : "Documents"})}>{report.completeness === "complete" ? "Review decision" : (a.customer_ask ?? []).some((item: {status: string}) => item.status === "missing") ? "Request documents" : "Open documents"} →</button></div>
           )}
           {tab === "Overview" && report?.status !== "investigating" &&
             (report ? (
@@ -151,12 +160,22 @@ export default function Investigation() {
                   <p className="text-sm leading-6 text-neutral-300">
                     {report.summary}
                   </p>
-                  <details className="findings-details"><summary>Findings and alternative explanation</summary><div className="space-y-4">
+                  {(report.observed || report.next_step) && (
+                    <Panel title="Verdict">
+                      {report.observed && <p className="text-sm leading-6">{report.observed}</p>}
+                      {report.next_step && (
+                        <p className="mt-3 text-sm leading-6">
+                          <strong>Suggested next step. </strong>
+                          {report.next_step}
+                        </p>
+                      )}
+                    </Panel>
+                  )}
                   {(report.findings ?? []).map((f: any, i: number) => (
                     <Panel key={i} title={`Finding ${i + 1}`}>
                       <p className="text-sm leading-6">{f.text}</p>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        {f.evidence_ids.map((id: string) => (
+                        {(f.evidence_ids ?? []).map((id: string) => (
                           <button
                             key={id}
                             onClick={() =>
@@ -177,7 +196,6 @@ export default function Investigation() {
                       {report.innocent_explanation ?? "Not available"}
                     </p>
                   </Panel>
-                  </div></details>
                   <button
                     className="secondary"
                     onClick={() =>
@@ -397,13 +415,16 @@ function Documents({
     [error, setError] = useState("");
   const { data: documents, error: documentError, reload: refreshDocuments } =
     useData<any[]>(`/alerts/${alert.alert_id}/documents`, 5000);
-  async function run(fn: () => Promise<unknown>) {
+  const asks: {artifact_type: string; title: string; status: string}[] = alert.customer_ask ?? [];
+  const outstanding = asks.filter((item) => item.status !== "received");
+  async function run(fn: () => Promise<unknown>, done = "Document attached. Run the investigation from Summary to include the new evidence.") {
     setBusy(true);
     setError("");
     setMessage("");
     try {
-      await fn();
-      setMessage("Document attached. Run the investigation from Summary to include the new evidence.");
+      const result = await fn();
+      const note = result && typeof result === "object" && "note" in result ? String((result as {note?: string}).note || "") : "";
+      setMessage(note || done);
       refreshDocuments();
       refresh();
     } catch (e) {
@@ -435,9 +456,61 @@ function Documents({
     <div className="space-y-5">
       {message && <Message>{message}</Message>}
       {error && <Message error>{error}</Message>}
+      <Panel title="Requested from the customer">
+        <p className="mb-4 text-sm text-neutral-400">
+          This is the investigator workbench. The customer does not upload here.
+          Record an RFI for anything still missing. Files already on the case were treated as customer submissions.
+        </p>
+        <ul className="coverage-list">
+          {(asks.length ? asks : [{title: "No specific customer document is mapped to this alert.", status: "received", artifact_type: ""}]).map((item) => (
+            <li key={item.title}>
+              <span>{item.title}</span>
+              <Badge tone={item.status === "received" ? "green" : item.status === "requested" ? "amber" : "neutral"}>
+                {item.status === "received" ? "Received" : item.status === "requested" ? "Requested" : human(item.artifact_type) + " required"}
+              </Badge>
+            </li>
+          ))}
+        </ul>
+        {outstanding.length > 0 && (
+          <button
+            className="primary mt-4"
+            disabled={busy || outstanding.every((item) => item.status === "requested")}
+            onClick={() =>
+              void run(
+                () => request(`/alerts/${alert.alert_id}/request-documents`, {}),
+                "Request recorded on the case.",
+              )
+            }
+          >
+            {outstanding.every((item) => item.status === "requested") ? "Request already recorded" : "Request documents from customer"}
+          </button>
+        )}
+      </Panel>
+      <Panel title="Customer submissions">
+        {documentError && <Message error>{documentError}</Message>}
+        {!documents?.filter((doc: any) => doc.submitted_by === "customer").length && !documentError && (
+          <p className="text-sm text-neutral-400">The customer has not submitted documents for this alert.</p>
+        )}
+        <div className="space-y-4">
+          {(documents ?? []).filter((doc: any) => doc.submitted_by === "customer").map((doc: any) => (
+            <article key={doc.document_id} className="rounded-lg border border-neutral-800 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div><h3 className="font-medium">{doc.title}</h3><p className="mt-1 text-xs text-neutral-500">{doc.document_id} · {human(doc.artifact_type || "document")}</p></div>
+                <Badge tone={doc.readable ? "green" : "amber"}>{doc.readable ? "Received from customer" : "Needs Transcription"}</Badge>
+              </div>
+              <p className="mt-3 text-sm text-neutral-400">Policy coverage: {doc.evidence_types.join(" · ")}</p>
+              {doc.viewable && <p className="mt-3"><a className="secondary" href={`/backend/documents/${doc.document_id}/file`} target="_blank" rel="noreferrer">View document</a></p>}
+              <details className="mt-3"><summary>View extracted text</summary><div className="mt-3 max-h-96 overflow-auto whitespace-pre-wrap text-sm leading-6">{doc.content}</div></details>
+            </article>
+          ))}
+        </div>
+      </Panel>
+      <details>
+        <summary>Attach a document already received (mailroom)</summary>
+        <div className="mt-4 space-y-4">
       <Panel title="Supporting Documents">
         <p className="mb-4 text-sm text-neutral-400">
-          Choose the evidence requirements supported by the document. Extraction
+          Use this only when a file arrived outside the customer portal. Extraction
           does not establish authenticity.
         </p>
         <fieldset className="mb-5 grid gap-2 md:grid-cols-2">
@@ -469,7 +542,7 @@ function Documents({
             />
           </label>
           <p className="text-xs text-neutral-500">
-            Maximum 5 MB. Scanned PDFs require OCR or a verified transcription.
+            Maximum 5 MB. Typed PDFs use pypdf. PNG/JPEG use Claude or OpenAI.
           </p>
           <button
             disabled={busy || !file || !coverage.length}
@@ -540,17 +613,20 @@ function Documents({
           </button>
         </form>
       </details>
-      <Panel title="Attached Documents">
+      <Panel title="Other attached documents">
         {documentError && <Message error>{documentError}</Message>}
-        {!documents?.length && !documentError && <p className="text-sm text-neutral-400">No documents attached to this investigation.</p>}
+        {!(documents ?? []).filter((doc: any) => doc.submitted_by !== "customer").length && !documentError && (
+          <p className="text-sm text-neutral-400">No investigator or mailroom files on this investigation.</p>
+        )}
         <div className="space-y-4">
-          {(documents ?? []).map((doc: any) => (
+          {(documents ?? []).filter((doc: any) => doc.submitted_by !== "customer").map((doc: any) => (
             <article key={doc.document_id} className="rounded-lg border border-neutral-800 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div><h3 className="font-medium">{doc.title}</h3><p className="mt-1 text-xs text-neutral-500">{doc.document_id}</p></div>
                 <Badge tone={doc.readable ? "green" : "amber"}>{doc.readable ? "Text Extracted" : "Needs Transcription"}</Badge>
               </div>
               <p className="mt-3 text-sm text-neutral-400">Evidence categories: {doc.evidence_types.join(" · ")}</p>
+              {doc.viewable && <p className="mt-3"><a className="secondary" href={`/backend/documents/${doc.document_id}/file`} target="_blank" rel="noreferrer">View document</a></p>}
               <details className="mt-3"><summary>View Extracted Text</summary><div className="mt-3 max-h-96 overflow-auto whitespace-pre-wrap text-sm leading-6">{doc.content}</div></details>
             </article>
           ))}
@@ -582,6 +658,8 @@ function Documents({
           >
             Attach legitimate-explanation fixture
           </button>
+        </div>
+      </details>
         </div>
       </details>
     </div>
