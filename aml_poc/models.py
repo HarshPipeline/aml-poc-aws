@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class Transaction(BaseModel):
@@ -47,6 +47,42 @@ class Assessment(BaseModel):
     observed: str = ""
     next_step: str = ""
     recommendation: Literal["clear", "request_info", "escalate"]
+
+    @model_validator(mode="before")
+    @classmethod
+    def drop_uncited_findings(cls, data):
+        """Models sometimes return a finding with no citations; drop those instead of failing the run."""
+        if not isinstance(data, dict):
+            return data
+        findings = data.get("findings")
+        if isinstance(findings, list):
+            kept = []
+            for item in findings:
+                if isinstance(item, dict):
+                    ids = [value for value in (item.get("evidence_ids") or []) if value]
+                    if not ids:
+                        continue
+                    item = {**item, "evidence_ids": ids}
+                kept.append(item)
+            if kept:
+                data["findings"] = kept
+        summary_ids = [
+            value for value in (data.get("summary_evidence_ids") or []) if value
+        ]
+        if not summary_ids:
+            first = next(
+                (
+                    item.get("evidence_ids")
+                    for item in (data.get("findings") or [])
+                    if isinstance(item, dict) and item.get("evidence_ids")
+                ),
+                None,
+            )
+            if first:
+                data["summary_evidence_ids"] = list(first)
+        elif summary_ids != data.get("summary_evidence_ids"):
+            data["summary_evidence_ids"] = summary_ids
+        return data
 
 
 class ReviewDecision(BaseModel):

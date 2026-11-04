@@ -1,0 +1,21 @@
+C004  C004/new_E
+Pacific Rim ep1  ALR-FB77F963B209  alert amount $1,405,000.00
+  Incoming letter $705,000.00
+  Supplier invoices $700,000.00  (11 PDFs)
+  Incoming + outgoing $1,405,000.00
+
+Pacific Rim ep2  ALR-6ECC0BF7A110  alert amount $1,475,000.00
+  Incoming letter $740,000.00
+  Supplier invoices $735,000.00  (11 PDFs)
+  Incoming + outgoing $1,475,000.00
+
+Pacific Rim ep3  ALR-0F4EBF8CA681  alert amount $1,445,000.00
+  Incoming letter $725,000.00
+  Supplier invoices $720,000.00  (11 PDFs)
+  Incoming + outgoing $1,445,000.00
+
+Pacific Rim ep4  ALR-EF0BBB464759  alert amount $1,685,000.00
+  Incoming letter $845,000.00
+  Supplier invoices $840,000.00  (11 PDFs)
+  Incoming + outgoing $1,685,000.00
+

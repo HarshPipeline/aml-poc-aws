@@ -614,7 +614,7 @@ def test_customer_packets_seed_and_request_remaining(service, monkeypatch):
     original = service.document_file(docs[0]["document_id"])
     assert original and original[0].is_file()
     sunnyvale = _first_then_later(alerts, "C001", "TM-01")
-    assert sunnyvale[0]["episode_label"] == f"Episode 1 of {len(sunnyvale)}"
+    assert sunnyvale[0]["episode_label"] == "Episode 1"
     _first_then_later(alerts, "C003", "TM-07")
     _first_then_later(alerts, "C004", "TM-09")
     if len(sunnyvale) > 1:

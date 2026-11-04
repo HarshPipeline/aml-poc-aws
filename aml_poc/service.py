@@ -1,12 +1,33 @@
 import copy
 import hashlib
 import logging
+import os
 import threading
+import time
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from .config import agent_mode, app_schema
 from .data import Dataset, by_customer
+from .demo_story import (
+    DEMO_CUSTOMERS,
+    EXPECTED_LIVE_COUNT,
+    EXPECTED_STREAM_COUNT,
+    LIVE_PREFIX,
+    build_demo_stream_packet,
+    demo_episode_fields,
+    hide_story,
+    hidden_transaction_ids,
+    is_held,
+    is_live_id,
+    prior_episode_notes,
+    prune_extra_history,
+    reveal_story,
+    select_demo_queue_alerts,
+    set_hold,
+    story_active,
+    visible_on_queue,
+)
 from .models import EvidenceDocument, ReviewDecision, Transaction
 from .rules import DetectorEngine
 from .store import Store, dump, now
@@ -18,6 +39,7 @@ class Service:
         self.lock = threading.RLock()
         self.graph_lock = threading.Lock()
         self.stop_event = threading.Event()
+        self.packet_stop = threading.Event()
         self.worker = None
         self.error = None
         self.data = data or Dataset.load()
@@ -37,22 +59,39 @@ class Service:
             self.store.set_metadata("stream_start", start.isoformat() if start else None)
         saved = self.store.metadata("stream_start")
         self.data.split(datetime.fromisoformat(saved) if saved else None)
+        self.engine = DetectorEngine(self.data)
+        self._hidden_ids = hidden_transaction_ids(self.data, self.engine)
         if not self.store.metadata("history_loaded", False):
-            self.store.add_events(self.data.history, "history")
+            # Demo customers are streamed by Monitoring Start, not preloaded.
+            history = [
+                r
+                for r in self.data.history
+                if r.transaction_id not in self._hidden_ids and r.customer_id not in DEMO_CUSTOMERS
+            ]
+            self.store.add_events(history, "history")
             self.store.set_metadata("history_loaded", True)
         self.rows = self.store.all_transactions()
         self.groups = by_customer(self.rows)
         self.clock = max(
-            max(r.txn_ts for r in self.rows),
+            max((r.txn_ts for r in self.rows), default=datetime(2000, 1, 1)),
             datetime.fromisoformat(self.store.metadata("clock", "2000-01-01T00:00:00")),
         )
-        self.engine = DetectorEngine(self.data)
         self.workflow = Workflow(self.data, self.store, self.schema, self.mode)
         self._running = set()
+        self._watch = None
+        self._live_packet = []
+        self._stream_ids = set()
+        self._saw_remote_live = False
+        # Clear demo customers before reconcile so boot does not detect/delete thousands of rows.
+        self._evacuate_demo_customers_locked()
+        hide_story(self)
+        self._live_done = 0
         self.reconcile()
         from .packets import seed_customer_packets
 
         seed_customer_packets(self)
+        prune_extra_history(self)
+        # Closed reviews are seeded on Start (reveal_story), not at boot.
         for case in self.store.all_cases():
             if case["status"] == "investigating":
                 self._close_interrupted(
@@ -73,6 +112,7 @@ class Service:
         self.stream = self.data.stream
         self.stream_ids = {r.transaction_id for r in self.stream}
         self.stream_done = len(self.stream_ids.intersection(r.transaction_id for r in self.rows))
+        self._start_live_watch()
 
     def reconcile(self, customer=None):
         for cid in [customer] if customer else list(self.groups):
@@ -95,23 +135,27 @@ class Service:
                         }
                     )
 
-    def ingest(self, row):
+    def ingest(self, row, follow_up=True, allow_past=False):
         row = Transaction.model_validate(row) if not isinstance(row, Transaction) else row
         self.data.validate_transaction(row)
+        created = []
         with self.lock:
             old = self.store.transaction(row.transaction_id)
             if old:
                 if old.model_dump(mode="json") != row.model_dump(mode="json"):
                     raise ValueError("Transaction ID reused with different contents")
                 return {"inserted": False, "transaction_id": row.transaction_id}
-            if row.txn_ts < self.clock:
+            in_packet = row.transaction_id in self._stream_ids
+            if row.txn_ts < self.clock and not is_live_id(row.transaction_id) and not allow_past and not in_packet:
                 raise ValueError(
                     "Late event rejected: event time precedes the watermark; replay in order or start a new run"
                 )
+            if is_live_id(row.transaction_id):
+                row = self._place_live_row(row)
             self.store.add_events([row], "stream" if row.transaction_id in self.stream_ids else "external")
             self.rows.append(row)
             self.groups[row.customer_id].append(row)
-            self.clock = row.txn_ts
+            self.clock = max(self.clock, row.txn_ts)
             self.reconcile(row.customer_id)
             # Timer-driven rules progress even if the next event belongs to another customer.
             for cid in self.groups:
@@ -121,7 +165,19 @@ class Service:
                 ):
                     self.reconcile(cid)
             self.stream_done = len(self.stream_ids.intersection(r.transaction_id for r in self.rows))
-            return {"inserted": True, "transaction_id": row.transaction_id}
+            created = [
+                a
+                for a in self.store.alerts()
+                if a["customer_id"] == row.customer_id
+                and a.get("signal_status") == "confirmed"
+                and any(is_live_id(i) for i in a.get("transaction_ids") or [])
+            ]
+            for alert in created:
+                set_hold(self, alert["customer_id"], True)
+            result = {"inserted": True, "transaction_id": row.transaction_id}
+        if follow_up:
+            self._follow_up_live(created)
+        return result
 
     def advance_clock(self, target):
         stamp = datetime.fromisoformat(target)
@@ -135,42 +191,61 @@ class Service:
         return self.status()
 
     def list_alerts(self, scope="all"):
-        from .packets import customer_ask, episode_view
-
         with self.lock:
-            output = []
+            if not story_active(self):
+                return []
+            siblings = self.store.alerts()
             cases = self.store.latest_cases()
             versions = {}
-            siblings = self.store.alerts()
-            for alert in siblings:
+            output = []
+            for alert in select_demo_queue_alerts(siblings):
                 is_stream = any(i in self.stream_ids for i in alert["transaction_ids"])
                 if scope == "stream" and not is_stream or scope == "history" and is_stream:
                     continue
-                case = cases.get(alert["alert_id"])
-                if alert["customer_id"] not in versions:
-                    versions[alert["customer_id"]] = self.document_version(alert["customer_id"])
-                profile = self.data.customers[alert["customer_id"]]
-                asks = customer_ask(alert, siblings, self.store)
-                output.append(
-                    {
-                        **alert,
-                        "customer_name": profile.get("business_name") or profile["fake_name"],
-                        "source": "stream" if is_stream else "history",
-                        "case_id": case["case_id"] if case else None,
-                        "case_status": case["status"] if case else "not_started",
-                        "recommendation": case.get("recommendation") if case else None,
-                        "customer_ask": asks,
-                        **episode_view(alert, siblings, asks),
-                        "report_stale": bool(
-                            case
-                            and (
-                                case["alert"]["revision"] != alert["revision"]
-                                or case.get("document_version") != versions[alert["customer_id"]]
-                            )
-                        ),
-                    }
-                )
+                row = self._enrich_alert(alert, siblings, cases, versions)
+                if visible_on_queue(row, active=True):
+                    output.append(row)
             return sorted(output, key=lambda a: a["detected_at"], reverse=True)
+
+    def get_alert_view(self, alert_id):
+        """Single enriched alert for the investigation page (avoids loading the full queue)."""
+        with self.lock:
+            alert = self.store.get_alert(alert_id)
+            if not alert:
+                return None
+            siblings = self.store.alerts()
+            cases = self.store.latest_cases()
+            return self._enrich_alert(alert, siblings, cases, {})
+
+    def _enrich_alert(self, alert, siblings, cases, versions):
+        from .packets import customer_ask
+
+        case = cases.get(alert["alert_id"])
+        customer_id = alert["customer_id"]
+        if customer_id not in versions:
+            versions[customer_id] = self.document_version(customer_id)
+        profile = self.data.customers[customer_id]
+        asks = customer_ask(alert, siblings, self.store)
+        is_stream = any(i in self.stream_ids for i in alert["transaction_ids"])
+        return {
+            **alert,
+            "customer_name": profile.get("business_name") or profile["fake_name"],
+            "source": "stream" if is_stream else "history",
+            "case_id": case["case_id"] if case else None,
+            "case_status": case["status"] if case else "not_started",
+            "recommendation": case.get("recommendation") if case else None,
+            "customer_ask": asks,
+            **demo_episode_fields(alert, siblings, asks),
+            "account_hold": is_held(self, customer_id),
+            "prior_episodes": prior_episode_notes(alert, siblings, cases),
+            "report_stale": bool(
+                case
+                and (
+                    case["alert"]["revision"] != alert["revision"]
+                    or case.get("document_version") != versions[customer_id]
+                )
+            ),
+        }
 
     def investigate(self, alert_id, failure="none", force=False):
         case = self._begin_investigation(alert_id, failure, force)
@@ -227,6 +302,7 @@ class Service:
                 "steps": [],
                 "decision": None,
                 "recommendation": None,
+                "prior_episodes": prior_episode_notes(alert, self.store.alerts(), self.store.latest_cases()),
                 "document_version": self.document_version(alert["customer_id"]),
             }
             self.store.put_case(case)
@@ -258,12 +334,6 @@ class Service:
                     case["status"] = "awaiting_review"
                     case["completeness"] = "incomplete"
                     return case
-
-    def _run_background(self, case):
-        try:
-            self._finish_investigation(case)
-        finally:
-            self._running.discard(case["case_id"])
 
     def _close_interrupted(self, case, detail, agent="orchestrator", error_type="Interrupted"):
         case["status"] = "awaiting_review"
@@ -399,12 +469,36 @@ class Service:
                 raise ValueError("Evidence changed. Generate a fresh report before recording a decision.")
             result = self.workflow.resume(case["case_id"], decision)
             self._save_review(result)
+            if decision["action"] == "clear":
+                set_hold(self, alert["customer_id"], False)
+            elif decision["action"] == "escalate":
+                set_hold(self, alert["customer_id"], True)
             return result
 
     def status(self):
         with self.lock:
-            alerts = self.store.alerts()
-            cases = self.store.case_counts()
+            active = story_active(self)
+            # Lightweight counts — do not run full alert enrichment on the poll path.
+            if active:
+                queue = select_demo_queue_alerts(self.store.alerts())
+                cases = self.store.latest_cases()
+                awaiting = 0
+                reviewed = 0
+                stream_alerts = 0
+                for alert in queue:
+                    case = cases.get(alert["alert_id"])
+                    status = case["status"] if case else "not_started"
+                    if status == "reviewed":
+                        reviewed += 1
+                    else:
+                        awaiting += 1
+                    if any(i in self.stream_ids for i in alert.get("transaction_ids") or []) or any(
+                        is_live_id(i) for i in alert.get("transaction_ids") or []
+                    ):
+                        stream_alerts += 1
+                alert_count = len(queue)
+            else:
+                alert_count = awaiting = reviewed = stream_alerts = 0
             return {
                 "mode": self.mode,
                 "model": self.workflow.model_name,
@@ -413,73 +507,307 @@ class Service:
                 "transactions": len(self.rows),
                 "stream_total": len(self.stream),
                 "stream_processed": self.stream_done,
-                "running": bool(self.worker and self.worker.is_alive() and not self.stop_event.is_set()),
-                "alerts": len(alerts),
-                "stream_alerts": sum(any(i in self.stream_ids for i in a["transaction_ids"]) for a in alerts),
-                "awaiting_review": cases.get("awaiting_review", 0),
-                "reviewed": cases.get("reviewed", 0),
+                "live_total": len(self._live_packet) or EXPECTED_STREAM_COUNT,
+                "live_processed": self._live_done,
+                "transactions_processed": self._live_done,
+                "running": bool(self.worker and self.worker.is_alive() and not self.packet_stop.is_set()),
+                "alerts": alert_count,
+                "stream_alerts": stream_alerts,
+                "awaiting_review": awaiting,
+                "reviewed": reviewed,
                 "error": self.error,
                 "policy_hash": self.data.policy_hash,
                 "stream_start": self.data.stream_start.isoformat() if self.data.stream_start else None,
                 "data_source": "rds",
                 "app_schema": self.schema,
                 "audit_integrity": self.store.verify_audit(full=False),
-                "tracing": __import__("os").environ.get("LANGSMITH_TRACING", "false").lower() == "true",
+                "tracing": os.environ.get("LANGSMITH_TRACING", "false").lower() == "true",
+                "demo_story_active": active,
             }
 
-    def start(self, events_per_second=50, auto_investigate=True):
+    def start(self, events_per_second=50, auto_investigate=False):
+        """Stream ~100 demo transactions. Investigations/Customers stay empty until finished."""
         with self.lock:
             if self.worker and self.worker.is_alive():
-                raise ValueError("Replay worker is active; pause and wait for it to stop")
-            if not self.stream:
-                raise ValueError("No RDS transactions fall on or after the stream start; nothing to replay")
-            self.stop_event.clear()
+                raise ValueError("Stream worker is already running")
+            if any(r.customer_id in DEMO_CUSTOMERS for r in self.rows):
+                raise ValueError("Reset the demo stream before Start")
+            packet = build_demo_stream_packet(self.data, self.engine, EXPECTED_STREAM_COUNT)
+            self._evacuate_demo_customers_locked()
+            self._live_packet = packet
+            self._stream_ids = {r.transaction_id for r in packet}
+            self._live_done = 0
+            if packet:
+                self.clock = min(r.txn_ts for r in packet) - timedelta(seconds=1)
+            self.packet_stop.clear()
             self.error = None
             self.store.audit(
-                "replay",
+                "live_packet",
                 "stream_started",
-                {"events_per_second": events_per_second, "auto_investigate": auto_investigate},
+                {
+                    "events_per_second": events_per_second,
+                    "auto_investigate": False,
+                    "packet_size": len(packet),
+                    "customers": list(DEMO_CUSTOMERS),
+                },
             )
             self.worker = threading.Thread(
-                target=self._replay, args=(events_per_second, auto_investigate), daemon=True
+                target=self._play_live_packet,
+                args=(events_per_second,),
+                daemon=True,
+                name="demo-stream-packet",
             )
             self.worker.start()
         return self.status()
 
-    def _replay(self, rate, investigate):
+    def _play_live_packet(self, rate):
+        finished = False
         try:
-            for transaction in self.stream:
-                if self.stop_event.is_set():
+            for transaction in list(self._live_packet):
+                if self.packet_stop.is_set() or self.stop_event.is_set():
                     break
                 with self.lock:
                     exists = self.store.transaction(transaction.transaction_id)
                 if exists:
+                    with self.lock:
+                        self._live_done = sum(
+                            1 for r in self.rows if r.transaction_id in self._stream_ids
+                        )
                     continue
-                self.ingest(transaction)
-                if self.stop_event.wait(1 / rate):
+                self.ingest(transaction, follow_up=True, allow_past=True)
+                with self.lock:
+                    self._live_done = sum(1 for r in self.rows if r.transaction_id in self._stream_ids)
+                if self.packet_stop.wait(1 / max(rate, 0.1)) or self.stop_event.is_set():
                     break
-            if investigate and not self.stop_event.is_set():
-                for alert in self.list_alerts("stream"):
-                    if self.stop_event.is_set():
-                        break
-                    self.investigate(alert["alert_id"])
+            else:
+                finished = True
         except Exception as error:  # noqa: BLE001 - worker failures are surfaced in status and audit
             self.error = f"{type(error).__name__}: {error}"
         finally:
             with self.lock:
+                if finished and not self.error:
+                    reveal_story(self)
                 self.store.audit(
-                    "replay",
-                    "stream_paused" if self.stop_event.is_set() else "stream_finished",
-                    {"processed": self.stream_done, "error": self.error},
+                    "live_packet",
+                    "stream_paused" if self.packet_stop.is_set() else "stream_finished",
+                    {
+                        "processed": self._live_done,
+                        "error": self.error,
+                        "demo_story_active": story_active(self),
+                    },
                 )
 
+    def reset_live_packet(self):
+        """Same rewind as the start of every Start press (AWS reset equivalent)."""
+        with self.lock:
+            if self.worker and self.worker.is_alive():
+                self.packet_stop.set()
+                worker = self.worker
+            else:
+                worker = None
+        if worker:
+            worker.join(timeout=5)
+        with self.lock:
+            if self.worker and self.worker.is_alive():
+                raise ValueError("Stream is still stopping; pause and try Reset again")
+            self._evacuate_demo_customers_locked()
+            hide_story(self)
+            self.store.audit("live_packet", "stream_reset", {"customers": list(DEMO_CUSTOMERS)})
+        return self.status()
+
+    def _evacuate_demo_customers_locked(self):
+        """Remove demo customers in bulk so Monitoring Start can replay ~100 rows quickly."""
+        self.store.drop_customers(DEMO_CUSTOMERS)
+        self.rows = [r for r in self.rows if r.customer_id not in DEMO_CUSTOMERS]
+        self.groups = by_customer(self.rows)
+        for customer_id in DEMO_CUSTOMERS:
+            self.groups[customer_id] = []
+            set_hold(self, customer_id, False)
+        self._clear_remote_live_rows()
+        self._saw_remote_live = False
+        self._live_packet = []
+        self._stream_ids = set()
+        self._live_done = 0
+        self.packet_stop.clear()
+        if self.rows:
+            self.clock = max(r.txn_ts for r in self.rows)
+        else:
+            self.clock = datetime(2000, 1, 1)
+
+    def _clear_live_episode_evidence_locked(self):
+        """Drop live-episode uploads/RFIs so Start again does not keep Documents received."""
+        from .packets import _drop_runtime_copy
+
+        live_ids = {r.transaction_id for r in self.rows if is_live_id(r.transaction_id)}
+        for alert in self.store.alerts():
+            ids = alert.get("transaction_ids") or []
+            if any(is_live_id(i) for i in ids):
+                live_ids.update(ids)
+        if not live_ids:
+            return
+        for customer_id in ("C002", "C003"):
+            for document in list(self.store.documents(customer_id)):
+                if str(document.get("document_id", "")).startswith("CUST-"):
+                    continue
+                doc_txns = set(document.get("transaction_ids") or [])
+                if not doc_txns.intersection(live_ids):
+                    continue
+                self.store.delete_document(document["document_id"])
+                _drop_runtime_copy(document)
+
+    def _clear_remote_live_rows(self):
+        """Drop backup RDS live rows so the next Start is a clean demo, like the AWS reset SQL."""
+        try:
+            from .db import connect
+
+            with connect() as conn:
+                conn.execute("DELETE FROM transactions WHERE transaction_id LIKE %s", (LIVE_PREFIX + "%",))
+        except Exception:
+            logging.getLogger(__name__).exception("Could not clear RDS live demo rows")
+
     def pause(self):
-        self.stop_event.set()
+        self.packet_stop.set()
         return self.status()
 
     def recent(self, limit=30):
         with self.lock:
             return [r.model_dump(mode="json") for r in self.rows[-limit:]][::-1]
+
+    def monitoring_transactions(self, limit=100):
+        """Monitoring table mirrors the Start stream (demo customers only), newest first."""
+        with self.lock:
+            rows = [r for r in self.rows if r.customer_id in DEMO_CUSTOMERS]
+            rows.sort(key=lambda r: (r.txn_ts, r.transaction_id), reverse=True)
+            return [r.model_dump(mode="json") for r in rows[:limit]]
+
+    def _place_live_row(self, row):
+        """Keep live payments after that customer's history so they form a new episode."""
+        last_history = max(
+            (
+                r.txn_ts
+                for r in self.rows
+                if r.customer_id == row.customer_id and not is_live_id(r.transaction_id)
+            ),
+            default=self.clock,
+        )
+        floor = last_history + timedelta(days=20)
+        last_live = max(
+            (
+                r.txn_ts
+                for r in self.rows
+                if r.customer_id == row.customer_id and is_live_id(r.transaction_id)
+            ),
+            default=None,
+        )
+        if last_live is not None and last_live >= floor:
+            floor = last_live + timedelta(minutes=1)
+        if row.txn_ts >= floor and (last_live is None or row.txn_ts > last_live):
+            return row
+        return row.model_copy(update={"txn_ts": floor})
+
+    def _follow_up_live(self, alerts):
+        """Hold the account when a live cluster confirms. Document asks stay human-only."""
+        seen = set()
+        for alert in alerts or []:
+            alert_id = alert["alert_id"]
+            if alert_id in seen:
+                continue
+            seen.add(alert_id)
+            if not any(is_live_id(i) for i in alert.get("transaction_ids") or []):
+                continue
+            set_hold(self, alert["customer_id"], True)
+
+    def _run_background(self, case):
+        try:
+            self._finish_investigation(case)
+        finally:
+            self._running.discard(case["case_id"])
+
+    def _start_live_watch(self):
+        if self.schema.startswith("aml_test_"):
+            return
+        if os.environ.get("AML_LIVE_WATCH", "1").lower() in {"0", "false", "off", "no"}:
+            return
+        if self._watch and self._watch.is_alive():
+            return
+        self._watch = threading.Thread(target=self._watch_live, name="live-rds-watch", daemon=True)
+        self._watch.start()
+
+    def _watch_live(self):
+        while not self.stop_event.wait(2):
+            try:
+                self.sync_live_packet()
+            except Exception:
+                logging.getLogger(__name__).exception("Live RDS watch failed")
+
+    def sync_live_packet(self):
+        from .db import connect
+
+        with connect(read_only=True) as conn:
+            remote = {
+                r["transaction_id"]: r
+                for r in conn.execute(
+                    "SELECT * FROM transactions WHERE transaction_id LIKE %s ORDER BY txn_ts, transaction_id",
+                    (LIVE_PREFIX + "%",),
+                )
+            }
+        # Backup path: pull RDS inserts. Start-created local rows are reset only via Reset.
+        pending = []
+        with self.lock:
+            if remote:
+                self._saw_remote_live = True
+            elif self._saw_remote_live:
+                for transaction_id in [r.transaction_id for r in self.rows if is_live_id(r.transaction_id)]:
+                    self._forget_live_row(transaction_id)
+                self._saw_remote_live = False
+                self._live_done = 0
+                hide_story(self)
+                return
+            for transaction_id, payload in remote.items():
+                if self.store.transaction(transaction_id):
+                    continue
+                pending.append(Transaction.model_validate(payload))
+        created = []
+        for row in pending:
+            inserted = self.ingest(row, follow_up=False)
+            if inserted.get("inserted"):
+                created.extend(
+                    a
+                    for a in self.store.alerts()
+                    if a.get("signal_status") == "confirmed"
+                    and any(is_live_id(i) for i in a.get("transaction_ids") or [])
+                )
+        if pending:
+            with self.lock:
+                self._live_done = sum(1 for r in self.rows if is_live_id(r.transaction_id))
+                # Reveal only once the full live packet is present (same as Start finishing).
+                if self._live_done >= EXPECTED_LIVE_COUNT:
+                    reveal_story(self)
+            self._follow_up_live(created)
+
+    def _forget_live_row(self, transaction_id):
+        row = next((r for r in self.rows if r.transaction_id == transaction_id), None)
+        customer_id = row.customer_id if row else None
+        self.store.drop_transaction(transaction_id)
+        self.rows = [r for r in self.rows if r.transaction_id != transaction_id]
+        for rows in self.groups.values():
+            rows[:] = [r for r in rows if r.transaction_id != transaction_id]
+        for alert in list(self.store.alerts()):
+            ids = alert.get("transaction_ids") or []
+            if transaction_id in ids and all(is_live_id(i) for i in ids):
+                self.store.drop_alert(alert["alert_id"])
+        if self.rows:
+            self.clock = max(r.txn_ts for r in self.rows)
+        for cid in {customer_id} if customer_id else {"C002", "C003"}:
+            still_live = any(
+                a.get("customer_id") == cid
+                and a.get("signal_status") != "withdrawn"
+                and any(is_live_id(i) for i in a.get("transaction_ids") or [])
+                for a in self.store.alerts()
+            )
+            if not still_live:
+                set_hold(self, cid, False)
+            self.reconcile(cid)
 
     def close(self):
         self.stop_event.set()
@@ -487,5 +815,10 @@ class Service:
             self.worker.join(timeout=180)
             if self.worker.is_alive():
                 raise RuntimeError("Worker did not stop; database left open to avoid corrupting active work")
+        if self._watch:
+            self._watch.join(timeout=5)
+        deadline = time.time() + 30
+        while self._running and time.time() < deadline:
+            time.sleep(0.1)
         self.workflow.close()
         self.store.close()

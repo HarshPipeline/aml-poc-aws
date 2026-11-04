@@ -28,7 +28,7 @@ function display(value: any, key: string): string {
     if (key.endsWith("percent")) return `${value}%`;
     return value.toLocaleString("en-US");
   }
-  if (value === "SYNTHETIC_DEMO_CONFIG_NOT_REGULATORY") return "Demo configuration — not a regulatory requirement";
+  if (value === "SYNTHETIC_DEMO_CONFIG_NOT_REGULATORY") return "Internal threshold configuration";
   if (/^\d{4}-\d{2}-\d{2}/.test(value)) {
     const parsed = new Date(value.length === 10 ? `${value}T00:00:00Z` : /Z$|[+-]\d\d:\d\d$/.test(value) ? value : `${value}Z`);
     if (!Number.isNaN(parsed.valueOf())) return new Intl.DateTimeFormat("en-US", {month:"short", day:"numeric", year:"numeric", timeZone:"UTC", ...(value.length > 10 ? {hour:"2-digit", minute:"2-digit",second:"2-digit",timeZoneName:"short"} as const : {})}).format(parsed);

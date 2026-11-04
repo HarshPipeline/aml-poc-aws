@@ -1,0 +1,20 @@
+C003  C003/new_E
+Priya ep1  ALR-039354A0C3D6  alert amount $41,644.32
+  Outgoing invoices $20,723.69  (metrics outgoing_total $20,723.69)
+  TXN-000917  Kestrel Health Partners  $6,155.33
+  TXN-001018  Alder and Finch Retail Co.  $7,008.33
+  TXN-001113  Kestrel Health Partners  $7,560.03
+
+Priya ep2  ALR-828CFF02B797  alert amount $38,785.83
+  Outgoing invoices $19,119.18  (metrics outgoing_total $19,119.18)
+  TXN-002531  Kestrel Health Partners  $6,537.20
+  TXN-002611  Northbeam Software Inc.  $6,642.78
+  TXN-002693  Kestrel Health Partners  $5,939.20
+
+Priya ep3  ALR-9B4D5BC6D2B6  alert amount $59,626.49
+  Outgoing invoices $29,465.49  (metrics outgoing_total $29,465.49)
+  TXN-003718  Alder and Finch Retail Co.  $5,782.66
+  TXN-003820  Brightwater Logistics Group  $7,801.30
+  TXN-003983  Northbeam Software Inc.  $7,108.22
+  TXN-004096  Kestrel Health Partners  $8,773.31
+

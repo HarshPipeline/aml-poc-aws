@@ -120,6 +120,53 @@ class Store:
             self._events.setdefault(row.transaction_id, row)
 
     @synchronized
+    def drop_transaction(self, transaction_id):
+        self._query("DELETE FROM events WHERE transaction_id=%s", (transaction_id,))
+        self._events.pop(transaction_id, None)
+
+    @synchronized
+    def drop_customers(self, customer_ids):
+        """Bulk-remove customers' events, alerts, cases, RFIs, and documents (fast Reset/boot path)."""
+        customers = [customer_id for customer_id in customer_ids if customer_id]
+        if not customers:
+            return 0
+        wanted = set(customers)
+        alert_ids = [
+            alert["alert_id"]
+            for alert in self._alerts.values()
+            if alert.get("customer_id") in wanted
+        ]
+        if alert_ids:
+            self._query("DELETE FROM evidence_requests WHERE alert_id = ANY(%s)", (alert_ids,))
+            self._query("DELETE FROM cases WHERE alert_id = ANY(%s)", (alert_ids,))
+            self._query("DELETE FROM alerts WHERE id = ANY(%s)", (alert_ids,))
+            for alert_id in alert_ids:
+                self._alerts.pop(alert_id, None)
+        self._query("DELETE FROM documents WHERE customer_id = ANY(%s)", (customers,))
+        self._query("DELETE FROM events WHERE customer_id = ANY(%s)", (customers,))
+        removed = [
+            transaction_id
+            for transaction_id, row in list(self._events.items())
+            if row.customer_id in wanted
+        ]
+        for transaction_id in removed:
+            self._events.pop(transaction_id, None)
+        return len(removed)
+
+    @synchronized
+    def drop_alert(self, alert_id):
+        self._query("DELETE FROM evidence_requests WHERE alert_id=%s", (alert_id,))
+        self._query("DELETE FROM cases WHERE alert_id=%s", (alert_id,))
+        self._query("DELETE FROM alerts WHERE id=%s", (alert_id,))
+        self._alerts.pop(alert_id, None)
+
+    @synchronized
+    def drop_cases_for_alert(self, alert_id):
+        """Remove cases/RFIs for an alert without dropping the alert itself."""
+        self._query("DELETE FROM evidence_requests WHERE alert_id=%s", (alert_id,))
+        self._query("DELETE FROM cases WHERE alert_id=%s", (alert_id,))
+
+    @synchronized
     def transaction(self, transaction_id):
         return self._events.get(transaction_id)
 

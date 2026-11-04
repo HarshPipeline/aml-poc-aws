@@ -31,7 +31,8 @@ def serve(api_port=8001, ui_port=8501):
         processes.append(api)
         address = f"http://127.0.0.1:{api_port}"
         ready = False
-        for _ in range(600):
+        # Allow slow first boot (RDS + demo evacuate). ~3 minutes.
+        for _ in range(900):
             if api.poll() is not None:
                 raise RuntimeError("API exited during startup. Check the error above.")
             try:

@@ -1,0 +1,85 @@
+New evidence in new_E only. Original files were not changed.
+C005 and later Sunnyvale cash weeks stay empty for Request documents.
+
+C001  C001/new_E
+Sunnyvale first cash week  ALR-1267F60EA24D
+  Letter total  $46,492.00  (matches alert cash_total $46,492.00)
+  TXN-000090  $8,013.25
+  TXN-000097  $9,458.03
+  TXN-000133  $9,510.95
+  TXN-000145  $9,899.09
+  TXN-000171  $9,610.68
+  Later Sunnyvale cash weeks: left empty for Request documents.
+
+C002  C002/new_E
+Casa Brisa ep1  ALR-2D0AFF94B1E4  alert amount $99,232.23
+  Cash letter  $47,955.97  (metrics deposit_total $47,955.97)
+  Checks       $26,531.82  (4 images)
+  Wire invoices $24,744.44  (3 PDFs)
+  Payments     $51,276.26
+
+Casa Brisa ep2  ALR-C8BD5E1D3EB3  alert amount $97,778.34
+  Cash letter  $46,683.08  (metrics deposit_total $46,683.08)
+  Checks       $27,373.94  (5 images)
+  Wire invoices $23,721.32  (3 PDFs)
+  Payments     $51,095.26
+
+Casa Brisa ep3  ALR-449E6CCFE88B  alert amount $101,049.31
+  Cash letter  $43,720.00  (metrics deposit_total $43,720.00)
+  Checks       $34,219.96  (6 images)
+  Wire invoices $23,109.35  (3 PDFs)
+  Payments     $57,329.31
+
+Casa Brisa ep4  ALR-97360C3C321F  alert amount $96,752.96
+  Cash letter  $45,024.83  (metrics deposit_total $45,024.83)
+  Checks       $29,649.49  (5 images)
+  Wire invoices $22,078.64  (3 PDFs)
+  Payments     $51,728.13
+
+Casa Brisa ep5  ALR-39CA1056B369  alert amount $98,601.54
+  Cash letter  $48,088.46  (metrics deposit_total $48,088.46)
+  Checks       $32,489.29  (5 images)
+  Wire invoices $18,023.79  (2 PDFs)
+  Payments     $50,513.08
+
+C003  C003/new_E
+Priya ep1  ALR-039354A0C3D6  alert amount $41,644.32
+  Outgoing invoices $20,723.69  (metrics outgoing_total $20,723.69)
+  TXN-000917  Kestrel Health Partners  $6,155.33
+  TXN-001018  Alder and Finch Retail Co.  $7,008.33
+  TXN-001113  Kestrel Health Partners  $7,560.03
+
+Priya ep2  ALR-828CFF02B797  alert amount $38,785.83
+  Outgoing invoices $19,119.18  (metrics outgoing_total $19,119.18)
+  TXN-002531  Kestrel Health Partners  $6,537.20
+  TXN-002611  Northbeam Software Inc.  $6,642.78
+  TXN-002693  Kestrel Health Partners  $5,939.20
+
+Priya ep3  ALR-9B4D5BC6D2B6  alert amount $59,626.49
+  Outgoing invoices $29,465.49  (metrics outgoing_total $29,465.49)
+  TXN-003718  Alder and Finch Retail Co.  $5,782.66
+  TXN-003820  Brightwater Logistics Group  $7,801.30
+  TXN-003983  Northbeam Software Inc.  $7,108.22
+  TXN-004096  Kestrel Health Partners  $8,773.31
+
+C004  C004/new_E
+Pacific Rim ep1  ALR-FB77F963B209  alert amount $1,405,000.00
+  Incoming letter $705,000.00
+  Supplier invoices $700,000.00  (11 PDFs)
+  Incoming + outgoing $1,405,000.00
+
+Pacific Rim ep2  ALR-6ECC0BF7A110  alert amount $1,475,000.00
+  Incoming letter $740,000.00
+  Supplier invoices $735,000.00  (11 PDFs)
+  Incoming + outgoing $1,475,000.00
+
+Pacific Rim ep3  ALR-0F4EBF8CA681  alert amount $1,445,000.00
+  Incoming letter $725,000.00
+  Supplier invoices $720,000.00  (11 PDFs)
+  Incoming + outgoing $1,445,000.00
+
+Pacific Rim ep4  ALR-EF0BBB464759  alert amount $1,685,000.00
+  Incoming letter $845,000.00
+  Supplier invoices $840,000.00  (11 PDFs)
+  Incoming + outgoing $1,685,000.00
+

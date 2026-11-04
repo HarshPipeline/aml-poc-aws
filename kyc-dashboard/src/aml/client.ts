@@ -59,10 +59,18 @@ export function useData<T = any>(path: string, interval = 0) {
   const [version, setVersion] = useState(0);
   const reload = useCallback(() => setVersion((v) => v + 1), []);
   useEffect(() => {
+    setData(null);
+    setLoading(Boolean(path));
+    setError("");
+  }, [path]);
+  useEffect(() => {
+    if (!path) {
+      setLoading(false);
+      return;
+    }
     let active = true;
     let pending = false;
-    setData(null);
-    setLoading(true);
+    // Keep prior data visible while refreshing; only the path-change effect clears it.
     setError("");
     const run = async () => {
       if (pending) return;
@@ -113,7 +121,7 @@ export const documentsLabel = (status?: string) =>
 const displayLabels: Record<string, string> = {
   not_started: "Not started", awaiting_review: "Awaiting review", reviewed: "Reviewed",
   request_info: "Request information", clear: "Close alert", escalate: "Escalate",
-  kyc: "KYC", sar: "SAR", openai: "OpenAI", claude: "Claude", demo: "Demo",
+  kyc: "KYC", sar: "SAR", openai: "AI model", claude: "AI model", demo: "Standard",
   ach: "ACH", ach_in: "ACH credit", ach_out: "ACH debit",
 };
 export const human = (s: unknown) => {

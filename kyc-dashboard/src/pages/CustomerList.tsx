@@ -56,22 +56,52 @@ function FilterGroup<T extends string>({ label, options, value, onChange }: {
 export default function CustomerList() {
   const navigate = useNavigate()
   const [customers, setCustomers] = useState<CustomerSummary[] | null>(null)
+  const [storyActive, setStoryActive] = useState<boolean | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [risk, setRisk] = useState<RiskFilter>('ALL')
   const [review, setReview] = useState<ReviewFilter>('ALL')
 
   useEffect(() => {
-    fetchCustomers().then(setCustomers).catch((e: Error) => setError(e.message))
+    let active = true
+    const load = () => {
+      Promise.all([
+        fetchCustomers(),
+        fetch('/backend/status').then(async (res) => {
+          if (!res.ok) return { demo_story_active: false }
+          return res.json()
+        }),
+      ])
+        .then(([list, status]) => {
+          if (!active) return
+          setCustomers(list)
+          setStoryActive(Boolean(status?.demo_story_active))
+          setError(null)
+        })
+        .catch((e: Error) => {
+          if (active) setError(e.message)
+        })
+    }
+    load()
+    const timer = setInterval(load, 5000)
+    return () => {
+      active = false
+      clearInterval(timer)
+    }
   }, [])
 
   if (error) return <ErrorState message={error} />
-  if (!customers) return <Spinner label="Loading customers..." />
+  if (!customers || storyActive === null) return <Spinner label="Loading customers..." />
 
-  const rows = customers.filter(
+  // Empty until Monitoring Start finishes; then the three demo customers.
+  const demoIds = new Set(['C001', 'C002', 'C003'])
+  const demoCustomers = storyActive
+    ? customers.filter((c) => demoIds.has(c.customer_id))
+    : []
+  const rows = demoCustomers.filter(
     (c) => (risk === 'ALL' || c.risk_rating === risk) && (review === 'ALL' || c.kyc_review_status === review),
   )
-  const needsReview = customers.filter((c) => c.kyc_review_status !== 'CURRENT').length
-  const screeningHits = customers.filter((c) => c.pep_flag || c.sanctions_status !== 'CLEAR').length
+  const needsReview = demoCustomers.filter((c) => c.kyc_review_status !== 'CURRENT').length
+  const screeningHits = demoCustomers.filter((c) => c.pep_flag || c.sanctions_status !== 'CLEAR').length
 
   return (
     <div className="mx-auto max-w-6xl p-8">
@@ -79,14 +109,14 @@ export default function CustomerList() {
         Customer <span className="text-brand">KYC</span> overview
       </h1>
       <p className="mt-1 text-sm text-neutral-400">
-        Know-your-customer profiles, risk ratings, and review schedule for every customer.
+        Know-your-customer profiles, risk ratings, and review schedule.
       </p>
 
       <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Customers" value={customers.length} icon={<Users className="h-4 w-4" />} />
+        <StatCard label="Customers" value={demoCustomers.length} icon={<Users className="h-4 w-4" />} />
         <StatCard
           label="High risk"
-          value={customers.filter((c) => c.risk_rating === 'HIGH').length}
+          value={demoCustomers.filter((c) => c.risk_rating === 'HIGH').length}
           icon={<AlertTriangle className="h-4 w-4" />}
           accent
         />
@@ -162,7 +192,9 @@ export default function CustomerList() {
             {rows.length === 0 && (
               <tr>
                 <td colSpan={7} className="px-5 py-10 text-center text-neutral-500">
-                  No customers match these filters.
+                  {storyActive
+                    ? 'No customers match these filters.'
+                    : 'No customers yet. Open Monitoring and press Start to begin.'}
                 </td>
               </tr>
             )}
