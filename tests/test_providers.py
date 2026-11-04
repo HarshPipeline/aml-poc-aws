@@ -18,6 +18,24 @@ def test_assessment_allows_omitted_verdict_fields():
     assert result.innocent_explanation == ""
 
 
+def test_assessment_drops_findings_with_empty_evidence_ids():
+    result = Assessment(
+        summary="The case file is ready for review.",
+        summary_evidence_ids=[],
+        findings=[
+            {"text": "Matched payments align with invoices on file.", "evidence_ids": ["E1"]},
+            {"text": "Hypothesis without a citation.", "evidence_ids": []},
+            {"text": "Another cited observation.", "evidence_ids": ["E2"]},
+        ],
+        recommendation="clear",
+    )
+    assert [finding.text for finding in result.findings] == [
+        "Matched payments align with invoices on file.",
+        "Another cited observation.",
+    ]
+    assert result.summary_evidence_ids == ["E1"]
+
+
 
 def test_openai_responses_preserves_roles_schema_and_no_storage():
     captured = {}

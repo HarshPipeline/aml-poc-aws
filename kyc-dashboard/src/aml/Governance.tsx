@@ -149,7 +149,7 @@ const sourceNames: Record<string,string> = {
 export function Policies() {
   const { data, error, loading } = useData("/policies");
   return <div className="page policy-page">
-    <Heading title="Detection Policies" description="Understand what each alert looks for, when it is triggered and what to review." />
+    <Heading title="Policies" description="Understand what each alert looks for, when it is triggered and what to review." />
     <p className="policy-context">The thresholds below are configured for this demonstration. They are not regulatory requirements. An alert prompts investigation; it does not establish suspicious activity.</p>
     {error && <Message error>{error}</Message>}
     {loading && <p className="text-sm text-neutral-400">Loading policies…</p>}

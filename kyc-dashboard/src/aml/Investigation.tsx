@@ -12,16 +12,15 @@ export default function Investigation() {
     [params, setParams] = useSearchParams();
   const tab = params.get("section") ?? "Overview";
   const {
-    data: alerts,
+    data: a,
     error,
     reload: refreshAlert,
-  } = useData<any[]>("/alerts", 5000);
-  const a = alerts?.find((row) => row.alert_id === alertId);
+  } = useData<any>(alertId ? `/alerts/${alertId}` : "", 5000);
   const {
     data: report,
     error: caseError,
     reload: refreshCase,
-  } = useData(`/alerts/${alertId}/case`, 1000);
+  } = useData(alertId ? `/alerts/${alertId}/case` : "", 2000);
   const [busy, setBusy] = useState(false),
     [failure, setFailure] = useState("");
   const [name, setName] = useState(""),
@@ -98,7 +97,7 @@ export default function Investigation() {
       {(error || caseError || failure) && (
         <Message error>{error || caseError || failure}</Message>
       )}
-      {!a && !error && <Message>{alerts ? "Alert not found. Return to the alert queue." : "Loading investigation…"}</Message>}
+      {!a && !error && <Message>Loading investigation…</Message>}
       {a && (
         <>
           <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
@@ -111,6 +110,7 @@ export default function Investigation() {
             <div className="flex gap-2">
               <Badge tone={a.priority === "high" ? "red" : a.priority === "medium" ? "amber" : "neutral"}>{human(a.priority)} priority</Badge>
               <Badge tone={a.documents_status === "received" ? "green" : a.documents_status === "requested" ? "amber" : "neutral"}>{documentsLabel(a.documents_status)}</Badge>
+              {a.account_hold && <Badge tone="amber">On hold</Badge>}
               {a.signal_status !== "confirmed" && <Badge>{human(a.signal_status)}</Badge>}
             </div>
           </div>
@@ -147,12 +147,64 @@ export default function Investigation() {
             ))}
           </nav>
           {tab === "Overview" && <SummaryRun key={alertId} alertId={alertId} report={report} stale={a.report_stale} onFinished={refreshCase} />}
+          {tab === "Overview" && !report && (a.prior_episodes ?? []).length > 0 && (
+            <Panel title="Past activity">
+              <ul className="space-y-3 text-sm leading-6">
+                {a.prior_episodes.map((ep: any) => (
+                  <li key={ep.alert_id}>
+                    <strong>{ep.episode_label}</strong>
+                    <span className="text-neutral-500"> · {human(ep.action)} · {ep.investigator}</span>
+                    <p className="mt-1 text-neutral-300">{ep.reason}</p>
+                  </li>
+                ))}
+              </ul>
+            </Panel>
+          )}
           {tab === "Customer KYC" && (
             <CustomerKyc customerIdOverride={a.customer_id} />
           )}
-          {tab === "Overview" && report && report.status !== "investigating" && !report.decision && !a.report_stale && (
-            <div className="next-step"><div><strong>{report.completeness === "complete" ? `Suggested action: ${human(report.recommendation)}` : "Additional evidence required"}</strong><p>{report.completeness === "complete" ? "Read the summary, check the evidence, then record your decision." : (a.customer_ask ?? []).filter((item: {status: string}) => item.status !== "received").map((item: {title: string}) => item.title).join("; ") || "A recommendation requires additional evidence. Request the listed documents from the customer."}</p></div><button className="primary" onClick={() => setParams({section: report.completeness === "complete" ? "Decision" : "Documents"})}>{report.completeness === "complete" ? "Review decision" : (a.customer_ask ?? []).some((item: {status: string}) => item.status === "missing") ? "Request documents" : "Open documents"} →</button></div>
-          )}
+          {tab === "Overview" && report && report.status !== "investigating" && !report.decision && !a.report_stale && (() => {
+            const asks = a.customer_ask ?? [];
+            const docsIn =
+              a.documents_status === "received" ||
+              (asks.length > 0 && asks.every((item: { status: string }) => item.status === "received"));
+            // Docs already on file: do not bounce the investigator back to Documents.
+            const readyForDecision = report.completeness === "complete" || docsIn;
+            const pendingAsk = asks
+              .filter((item: { status: string }) => item.status !== "received")
+              .map((item: { title: string }) => item.title)
+              .join("; ");
+            return (
+              <div className="next-step">
+                <div>
+                  <strong>
+                    {readyForDecision
+                      ? report.recommendation
+                        ? `Suggested action: ${human(report.recommendation)}`
+                        : "Assessment ready for your decision"
+                      : "Additional evidence required"}
+                  </strong>
+                  <p>
+                    {readyForDecision
+                      ? "Read the summary, check the evidence, then record your decision."
+                      : pendingAsk ||
+                        "A recommendation requires additional evidence. Request the listed documents from the customer."}
+                  </p>
+                </div>
+                <button
+                  className="primary"
+                  onClick={() => setParams({ section: readyForDecision ? "Decision" : "Documents" })}
+                >
+                  {readyForDecision
+                    ? "Review decision"
+                    : asks.some((item: { status: string }) => item.status === "missing")
+                      ? "Request documents"
+                      : "Open documents"}{" "}
+                  →
+                </button>
+              </div>
+            );
+          })()}
           {tab === "Overview" && report?.status !== "investigating" &&
             (report ? (
               <div className="grid gap-5 xl:grid-cols-3">
@@ -160,6 +212,19 @@ export default function Investigation() {
                   <p className="text-sm leading-6 text-neutral-300">
                     {report.summary}
                   </p>
+                  {(a.prior_episodes ?? []).length > 0 && (
+                    <Panel title="Past activity">
+                      <ul className="space-y-3 text-sm leading-6">
+                        {a.prior_episodes.map((ep: any) => (
+                          <li key={ep.alert_id}>
+                            <strong>{ep.episode_label}</strong>
+                            <span className="text-neutral-500"> · {human(ep.action)} · {ep.investigator}</span>
+                            <p className="mt-1 text-neutral-300">{ep.reason}</p>
+                          </li>
+                        ))}
+                      </ul>
+                    </Panel>
+                  )}
                   {(report.observed || report.next_step) && (
                     <Panel title="Verdict">
                       {report.observed && <p className="text-sm leading-6">{report.observed}</p>}
@@ -404,7 +469,7 @@ function Documents({
   report: any;
   refresh: () => void;
 }) {
-  const [file, setFile] = useState<File | null>(null),
+  const [files, setFiles] = useState<File[]>([]),
     [coverage, setCoverage] = useState<string[]>([]),
     [title, setTitle] = useState(""),
     [content, setContent] = useState(""),
@@ -435,21 +500,37 @@ function Documents({
   }
   async function upload(e: React.SubmitEvent) {
     e.preventDefault();
-    if (!file || !coverage.length) return;
+    if (!files.length || !coverage.length) return;
     await run(async () => {
-      const form = new FormData();
-      form.append("file", file);
-      form.append("alert_id", alert.alert_id);
-      form.append("evidence_types", JSON.stringify(coverage));
-      const r = await fetch("/backend/documents/extract", {
-        method: "POST",
-        body: form,
-      });
-      const d = await r.json();
-      if (!r.ok)
-        throw new Error(
-          typeof d.detail === "string" ? d.detail : "Extraction failed",
-        );
+      const attached: string[] = [];
+      for (const file of files) {
+        const form = new FormData();
+        form.append("file", file);
+        form.append("alert_id", alert.alert_id);
+        form.append("evidence_types", JSON.stringify(coverage));
+        const r = await fetch("/backend/documents/extract", {
+          method: "POST",
+          body: form,
+        });
+        const d = await r.json();
+        if (!r.ok) {
+          const detail =
+            typeof d.detail === "string" ? d.detail : "Extraction failed";
+          const done =
+            attached.length > 0
+              ? ` Attached before failure: ${attached.join(", ")}.`
+              : "";
+          throw new Error(`${file.name}: ${detail}.${done}`);
+        }
+        attached.push(file.name);
+      }
+      setFiles([]);
+      return {
+        note:
+          attached.length === 1
+            ? `${attached[0]} attached. Run the investigation from Summary to include the new evidence.`
+            : `${attached.length} files attached. Run the investigation from Summary to include the new evidence.`,
+      };
     });
   }
   return (
@@ -510,8 +591,8 @@ function Documents({
         <div className="mt-4 space-y-4">
       <Panel title="Supporting Documents">
         <p className="mb-4 text-sm text-neutral-400">
-          Use this only when a file arrived outside the customer portal. Extraction
-          does not establish authenticity.
+          Attach files received from the customer by mail or email. They appear under
+          Customer submissions. Extraction does not establish authenticity.
         </p>
         <fieldset className="mb-5 grid gap-2 md:grid-cols-2">
           <legend className="mb-2 text-xs text-neutral-500">
@@ -537,18 +618,30 @@ function Documents({
             Upload PDF, text, or image
             <input
               type="file"
+              multiple
               accept=".pdf,.txt,.png,.jpg,.jpeg,.webp"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
             />
           </label>
+          {files.length > 0 && (
+            <ul className="text-xs text-neutral-400">
+              {files.map((f) => (
+                <li key={`${f.name}-${f.size}-${f.lastModified}`}>{f.name}</li>
+              ))}
+            </ul>
+          )}
           <p className="text-xs text-neutral-500">
-            Maximum 5 MB. Typed PDFs use pypdf. PNG/JPEG use Claude or OpenAI.
+            Select one or more PDF, text, or image files. Maximum 5 MB each.
           </p>
           <button
-            disabled={busy || !file || !coverage.length}
+            disabled={busy || !files.length || !coverage.length}
             className="primary"
           >
-            {busy ? "Extracting…" : "Extract and attach"}
+            {busy
+              ? "Extracting…"
+              : files.length > 1
+                ? `Extract and attach ${files.length} files`
+                : "Extract and attach"}
           </button>
         </form>
       </Panel>
@@ -632,34 +725,6 @@ function Documents({
           ))}
         </div>
       </Panel>
-      <details>
-        <summary>Demonstration evidence</summary>
-        <div className="mt-4 flex gap-3">
-          <button
-            className="secondary"
-            disabled={busy}
-            onClick={() =>
-              run(() => request(`/alerts/${alert.alert_id}/demo-packet`, {}))
-            }
-          >
-            Attach synthetic packet
-          </button>
-          <button
-            className="secondary"
-            disabled={busy}
-            onClick={() =>
-              run(() =>
-                request(
-                  `/alerts/${alert.alert_id}/demo-packet?resolution=documented_legitimate`,
-                  {},
-                ),
-              )
-            }
-          >
-            Attach legitimate-explanation fixture
-          </button>
-        </div>
-      </details>
         </div>
       </details>
     </div>

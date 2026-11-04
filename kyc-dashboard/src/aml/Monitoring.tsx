@@ -2,14 +2,13 @@ import { useState } from "react";
 import { Panel } from "../components/ui";
 import { request, useData, usd, human } from "./client";
 import { Heading, Message, Stats } from "./shared";
+
 export default function Monitoring() {
-  const { data: s, error, reload } = useData("/status", 2000),
-    { data: rows } = useData<any[]>("/transactions?limit=30", 2000);
-  const [rate, setRate] = useState(50),
-    [auto, setAuto] = useState(true),
-    [busy, setBusy] = useState(false),
+  const { data: s, error, reload } = useData("/status", 5000),
+    { data: rows } = useData<any[]>("/transactions?limit=100&scope=monitoring", 5000);
+  const [busy, setBusy] = useState(false),
     [failure, setFailure] = useState("");
-  async function action(path: string, body: unknown) {
+  async function action(path: string, body: unknown = {}) {
     setBusy(true);
     setFailure("");
     try {
@@ -21,78 +20,81 @@ export default function Monitoring() {
       setBusy(false);
     }
   }
+  const total = s?.live_total ?? 100;
+  const done = s?.live_processed ?? 0;
+  const processed = s?.transactions_processed ?? 0;
+  const running = Boolean(s?.running);
+  const liveReady = done > 0 || running;
+  const storyActive = Boolean(s?.demo_story_active);
+  const canReset = !running && (liveReady || storyActive);
+  const finished = !running && total > 0 && done >= total;
+  const progressValue = finished ? total : running ? done : done > 0 ? done : 0;
   return (
     <div className="page">
       <Heading
         title="Transaction Monitoring"
-        description="Review incoming transactions, alert volumes and monitoring status."
+        description="Start streams transactions into monitoring. Investigations and Customers stay empty until the stream finishes. Reset clears everything again."
       />
       {(error || failure) && <Message error>{error || failure}</Message>}
       {s && (
         <>
           <Stats
             items={[
-              ["Transactions processed", `${s.stream_processed} / ${s.stream_total}`],
-              ["Alerts", s.stream_alerts],
+              ["Transactions processed", String(processed)],
+              ["Alerts", s.alerts],
               ["Awaiting review", s.awaiting_review],
               ["Decisions", s.reviewed],
             ]}
           />
-          <Panel title="Transaction Replay">
+          <Panel title="Transaction stream">
+            <p className="mb-4 text-sm text-neutral-400">
+              Press Start to stream transactions. When the stream finishes, Customers and
+              Investigations appear for review. Press Reset to clear and start over.
+            </p>
             <div className="flex flex-wrap items-end gap-4">
-              <label>
-                Events per second
-                <select
-                  value={rate}
-                  onChange={(e) => setRate(Number(e.target.value))}
-                >
-                  {[5, 20, 50, 100, 250].map((n) => (
-                    <option key={n}>{n}</option>
-                  ))}
-                </select>
-              </label>
-              <label className="flex items-center gap-2 pb-3">
-                <input
-                  type="checkbox"
-                  checked={auto}
-                  onChange={(e) => setAuto(e.target.checked)}
-                />
-                Prepare assessments after replay
-              </label>
               <button
-                disabled={
-                  busy || s.running || s.stream_processed === s.stream_total
-                }
+                disabled={busy || running || liveReady}
                 className="primary"
                 onClick={() =>
                   action("/replay/start", {
-                    events_per_second: rate,
-                    auto_investigate: auto,
+                    events_per_second: 10,
+                    auto_investigate: false,
                   })
                 }
               >
-                Start / resume
+                Start
               </button>
               <button
-                disabled={busy || !s.running}
+                disabled={busy || !running}
                 className="secondary"
                 onClick={() => action("/replay/pause", {})}
               >
                 Pause
               </button>
+              <button
+                disabled={busy || !canReset}
+                className="secondary"
+                onClick={() => action("/replay/reset", {})}
+              >
+                Reset
+              </button>
             </div>
             <progress
               className="mt-5 w-full accent-brand"
-              value={s.stream_processed}
-              max={s.stream_total || 1}
+              value={progressValue}
+              max={Math.max(total, 1)}
             />
             <p className="mt-2 text-xs text-neutral-400">
-              {s.running
-                ? "Running"
-                : s.stream_processed === s.stream_total
-                  ? "Finished"
-                  : "Ready / paused"}{" "}
-              · Event time {s.event_clock} UTC · {human(s.mode)}
+              {running
+                ? "Streaming transactions"
+                : finished
+                  ? "Episode ready · press Reset before the next Start"
+                  : storyActive && !done
+                    ? "Customer activity is visible · press Reset to empty Investigations and Customers"
+                    : done
+                      ? "Paused · press Reset to clear, or wait if still streaming"
+                      : "Ready · press Start"}{" "}
+              · Event time {s.event_clock} UTC
             </p>
             {s.error && <Message error>{s.error}</Message>}
           </Panel>

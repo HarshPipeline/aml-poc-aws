@@ -1,0 +1,10 @@
+C001  C001/new_E
+Sunnyvale first cash week  ALR-1267F60EA24D
+  Letter total  $46,492.00  (matches alert cash_total $46,492.00)
+  TXN-000090  $8,013.25
+  TXN-000097  $9,458.03
+  TXN-000133  $9,510.95
+  TXN-000145  $9,899.09
+  TXN-000171  $9,610.68
+  Later Sunnyvale cash weeks: left empty for Request documents.
+

@@ -1,0 +1,31 @@
+C002  C002/new_E
+Casa Brisa ep1  ALR-2D0AFF94B1E4  alert amount $99,232.23
+  Cash letter  $47,955.97  (metrics deposit_total $47,955.97)
+  Checks       $26,531.82  (4 images)
+  Wire invoices $24,744.44  (3 PDFs)
+  Payments     $51,276.26
+
+Casa Brisa ep2  ALR-C8BD5E1D3EB3  alert amount $97,778.34
+  Cash letter  $46,683.08  (metrics deposit_total $46,683.08)
+  Checks       $27,373.94  (5 images)
+  Wire invoices $23,721.32  (3 PDFs)
+  Payments     $51,095.26
+
+Casa Brisa ep3  ALR-449E6CCFE88B  alert amount $101,049.31
+  Cash letter  $43,720.00  (metrics deposit_total $43,720.00)
+  Checks       $34,219.96  (6 images)
+  Wire invoices $23,109.35  (3 PDFs)
+  Payments     $57,329.31
+
+Casa Brisa ep4  ALR-97360C3C321F  alert amount $96,752.96
+  Cash letter  $45,024.83  (metrics deposit_total $45,024.83)
+  Checks       $29,649.49  (5 images)
+  Wire invoices $22,078.64  (3 PDFs)
+  Payments     $51,728.13
+
+Casa Brisa ep5  ALR-39CA1056B369  alert amount $98,601.54
+  Cash letter  $48,088.46  (metrics deposit_total $48,088.46)
+  Checks       $32,489.29  (5 images)
+  Wire invoices $18,023.79  (2 PDFs)
+  Payments     $50,513.08
+

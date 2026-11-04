@@ -12,6 +12,7 @@ export default function Queue() {
   const [view, setView] = useState("open");
   const all = (data ?? []).filter(r => scope === "all" || r.source === scope);
   const open = all.filter(r => r.case_status !== "reviewed");
+  const heldAccounts = new Set(all.filter(r => r.account_hold).map(r => r.customer_id)).size;
   const rows = all.filter(r =>
     (view === "all" || (view === "open" ? r.case_status !== "reviewed" : r.case_status === "reviewed")) &&
     (priority === "all" || r.priority === priority) &&
@@ -27,35 +28,49 @@ export default function Queue() {
     <Heading title="Investigations" description="Review alerts, assess supporting evidence and record investigation outcomes." />
     {error && <Message error>{error} <button className="secondary ml-3" onClick={reload}>Retry</button></Message>}
     <div className="queue-summary">
-      <div><strong>{loading ? "—" : open.length}</strong><span>Awaiting review</span></div>
-      <div><strong>{loading ? "—" : open.filter(r => r.priority === "high").length}</strong><span>High priority</span></div>
-      <div><strong>{loading ? "—" : all.length-open.length}</strong><span>Reviewed</span></div>
+      <div><strong>{loading && !data ? "—" : open.length}</strong><span>Awaiting review</span></div>
+      <div><strong>{loading && !data ? "—" : heldAccounts}</strong><span>Accounts on hold</span></div>
+      <div><strong>{loading && !data ? "—" : all.length-open.length}</strong><span>Reviewed</span></div>
     </div>
     <div className="queue-toolbar">
       <nav className="view-tabs" aria-label="Investigation status">
-        {[["open","Awaiting review"],["reviewed","Reviewed"],["all","All"]].map(([id,label]) =>
+        {[["all","All"],["open","Awaiting review"],["reviewed","Reviewed"]].map(([id,label]) =>
           <button key={id} aria-pressed={view===id} className={view===id ? "selected" : ""} onClick={() => setView(id)}>{label}</button>)}
       </nav>
       <input aria-label="Search investigations" placeholder="Search customer or alert…" value={search} onChange={e=>setSearch(e.target.value)} />
-      <details className="queue-filters"><summary>Filters{scope !== "stream" || priority !== "all" ? " · Active" : ""}</summary>
+      <details className="queue-filters"><summary>Filters{scope !== "all" || priority !== "all" ? " · Active" : ""}</summary>
         <div className="flex flex-wrap gap-4 pt-3">
-          <label>Activity<select value={scope} onChange={e=>setScope(e.target.value)}><option value="stream">Recent activity</option><option value="all">All activity</option><option value="history">Historical</option></select></label>
+          <label>Activity<select value={scope} onChange={e=>setScope(e.target.value)}><option value="all">All activity</option><option value="history">Historical</option><option value="stream">Recent activity</option></select></label>
           <label>Priority<select value={priority} onChange={e=>setPriority(e.target.value)}><option value="all">All priorities</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></label>
         </div>
       </details>
     </div>
     <div className="table-panel queue-table"><table>
-      <thead><tr><th>Customer</th><th>Episode</th><th>Amount</th><th>Documents</th><th>Priority</th><th>Required action</th><th><span className="sr-only">Open investigation</span></th></tr></thead>
+      <thead><tr><th>Customer</th><th>Episode</th><th>Amount</th><th>Documents</th><th>Account</th><th>Required action</th><th><span className="sr-only">Open investigation</span></th></tr></thead>
       <tbody>{rows.map(r=><tr key={r.alert_id}>
         <td><Link className="customer-link" to={`/investigations/${r.alert_id}`}>{r.customer_name}</Link><p className="mt-1 text-xs text-neutral-500">{scenario(r.pattern_ids)}</p></td>
         <td><p>{r.episode_label ?? "Episode 1"}</p><p className="mt-1 text-xs text-neutral-500">{episodeWindow(r.window_start, r.window_end)}</p></td>
         <td className="whitespace-nowrap">{usd(r.amount)}</td>
         <td><Badge tone={r.documents_status === "received" ? "green" : r.documents_status === "requested" ? "amber" : "neutral"}>{documentsLabel(r.documents_status)}</Badge></td>
-        <td><span className={`priority-dot ${r.priority}`} />{r.priority === "high" ? "High" : r.priority === "medium" ? "Medium" : "Low"}</td>
-        <td>{r.report_stale ? <Badge tone="amber">Update report</Badge> : r.case_status === "reviewed" ? "Decision recorded" : r.case_status === "awaiting_review" ? "Review assessment" : "Start investigation"}</td>
+        <td>{r.account_hold ? <Badge tone="amber">On hold</Badge> : "Active"}</td>
+        <td>{r.report_stale ? <Badge tone="amber">Update report</Badge> : r.case_status === "reviewed" ? "Decision recorded" : r.case_status === "awaiting_review" ? "Review assessment" : r.case_status === "investigating" ? "Investigation running" : "Start investigation"}</td>
         <td><Link className="open-case" to={`/investigations/${r.alert_id}`}>Review <span aria-hidden="true">→</span></Link></td>
       </tr>)}</tbody>
-    </table>{!rows.length && <div className="p-10 text-center"><p>{loading ? "Loading investigations…" : "No alerts in this view"}</p>{!loading && <p className="mt-2 text-sm text-neutral-400">Change the filters or view incoming activity in <Link className="text-brand" to="/monitoring">Monitoring</Link>.</p>}</div>}</div>
-    <div className="mt-5 flex items-center justify-between text-xs text-neutral-500"><span>{rows.length} alerts · {scope === "stream" ? "Recent activity" : scope === "history" ? "Historical activity" : "All activity"} · Highest priority first</span><button className="hover:text-white" onClick={()=>download("alert-queue.json",JSON.stringify(rows,null,2))}>Export alerts</button></div>
+    </table>
+    {!rows.length && (
+      <div className="p-10 text-center">
+        <p>{loading && !data ? "Loading investigations…" : "No alerts in this view"}</p>
+        {!loading && !all.length && (
+          <p className="mt-2 text-sm text-neutral-400">
+            Open Monitoring and press Start to begin reviewing customer activity.
+          </p>
+        )}
+        {!loading && !!all.length && (
+          <p className="mt-2 text-sm text-neutral-400">Change the filters or open another status tab.</p>
+        )}
+      </div>
+    )}
+    </div>
+    <div className="mt-5 flex items-center justify-between text-xs text-neutral-500"><span>{rows.length} alerts · Highest priority first</span><button className="hover:text-white" onClick={()=>download("alert-queue.json",JSON.stringify(rows,null,2))}>Export alerts</button></div>
   </div>;
 }

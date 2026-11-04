@@ -55,7 +55,7 @@ export default function SummaryRun({alertId, report, stale, onFinished}: {alertI
     <div className="summary-run-top"><div><span className="summary-run-kicker"><Sparkles size={14}/> Investigation assistant</span><h2>{titleCase(showingProgress ? active?.[1] ?? "Starting investigation" : "Run an evidence-based investigation")}</h2><p>{showingProgress ? active?.[2] : "Collect evidence, check the activity and prepare an assessment for your review."}</p></div>
       <button className="primary" disabled={!system || showingProgress} onClick={start}>{showingProgress ? <><LoaderCircle size={16} className="run-spin"/>{playback!==null ? "Showing completed steps" : "Investigating…"}</> : <><Sparkles size={16}/> Run AI investigation</>}</button>
     </div>
-    {system?.mode !== "openai" && system?.mode !== "claude" && <p className="summary-run-mode">{system ? "Demo preview · This run uses deterministic results, not a live AI model." : "Checking investigation mode…"}</p>}
+    {!system && <p className="summary-run-mode">Preparing investigation…</p>}
     {stale && !showingProgress && <p className="mt-3 text-sm text-amber-300">Evidence has changed. Run a new investigation to update the assessment.</p>}
     {failure && <p role="alert" className="mt-4 text-sm text-red-300">{failure}</p>}
     {showingProgress && !expanded && <button className="run-skip" onClick={()=>setExpanded(true)}>View investigation progress →</button>}
@@ -74,7 +74,7 @@ export default function SummaryRun({alertId, report, stale, onFinished}: {alertI
         const done=recorded.has(id) && !isActive && (playback===null || playbackStages.findIndex(s=>s[0]===id)<playback);
         return <li key={id} className={isActive ? "is-active" : done ? "is-done" : ""} aria-current={isActive ? "step" : undefined}><span className="run-node">{isActive ? <LoaderCircle size={15} className="run-spin"/> : done ? errors.has(id) ? <AlertCircle size={15}/> : <Check size={15}/> : index+1}</span><div><span>{titleCase(title)}</span><small>{isActive ? playback!==null ? "Showing recorded step" : "In progress" : done ? errors.has(id) ? "Needs attention" : "Completed" : playback!==null ? "Recorded · up next" : "Pending"}</small></div></li>;
       })}</ol></aside></div>
-      <footer className="cinema-footer">{system?.mode !== "openai" && system?.mode !== "claude" && <p>Demo preview · No live AI model is being called</p>}{showingProgress ? playback!==null ? <button className="primary" onClick={()=>{setPlayback(null);setExpanded(false);}}>Open assessment →</button> : <button className="secondary" onClick={()=>setExpanded(false)}>Continue reviewing customer</button> : <button className="primary" onClick={()=>setExpanded(false)}>{failure ? "Return to summary" : "View assessment →"}</button>}</footer>
+      <footer className="cinema-footer">{showingProgress ? playback!==null ? <button className="primary" onClick={()=>{setPlayback(null);setExpanded(false);}}>Open assessment →</button> : <button className="secondary" onClick={()=>setExpanded(false)}>Continue reviewing customer</button> : <button className="primary" onClick={()=>setExpanded(false)}>{failure ? "Return to summary" : "View assessment →"}</button>}</footer>
     </dialog>
     {!showingProgress && result && <p role="status" className="run-finished"><Check size={16}/> {result.completeness === "complete" ? "Assessment ready. Review the findings below." : "Investigation finished. Additional evidence or quality review is required; see the assessment below."}</p>}
   </section>;

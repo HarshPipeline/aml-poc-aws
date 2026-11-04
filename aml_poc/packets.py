@@ -48,12 +48,7 @@ def _packet_files(customer_id, pattern):
 
 
 SEEDED = (
-    {
-        "customer_id": "C001",
-        "family": "TM-01",
-        "slot": "first",
-        "files": _packet_files("C001", "new_E/*.pdf"),
-    },
+    # C001 structuring is first-look in the demo: no pre-attached documents.
     {
         "customer_id": "C002",
         "family": "TM-03",
@@ -125,7 +120,7 @@ def episode_view(alert, alerts, asks=None):
     return {
         "episode_index": index,
         "episode_count": count,
-        "episode_label": f"Episode {index} of {count}",
+        "episode_label": f"Episode {index}",
         "documents_status": documents,
     }
 
@@ -305,6 +300,12 @@ def clear_stale_customer_packets(store):
     for customer_id in SEEDED_CUSTOMERS:
         for document in store.documents(customer_id):
             if document["document_id"] in wanted:
+                continue
+            if document["document_id"].startswith("DEMO-"):
+                continue
+            if document["document_id"].startswith("DOC-"):
+                continue
+            if document.get("origin") in {"synthetic_fixture", "upload", "investigator"}:
                 continue
             store.delete_document(document["document_id"])
             _drop_runtime_copy(document)

@@ -63,11 +63,16 @@ def create_app(service=None):
 
     @app.post("/replay/start")
     def start(request: Request, body: ReplayRequest):
-        return svc(request).start(**body.model_dump())
+        # Start posts the Casa Brisa live episode-3 packet. auto_investigate is ignored.
+        return svc(request).start(events_per_second=body.events_per_second, auto_investigate=False)
 
     @app.post("/replay/pause")
     def pause(request: Request):
         return svc(request).pause()
+
+    @app.post("/replay/reset")
+    def reset_live(request: Request):
+        return svc(request).reset_live_packet()
 
     @app.post("/replay/clock")
     def clock(request: Request, body: ClockRequest):
@@ -78,14 +83,24 @@ def create_app(service=None):
         return svc(request).ingest(body)
 
     @app.get("/transactions")
-    def transactions(request: Request, limit: int = 30):
-        return svc(request).recent(min(max(limit, 1), 1000))
+    def transactions(request: Request, limit: int = 30, scope: str = ""):
+        service = svc(request)
+        capped = min(max(limit, 1), 1000)
+        if scope == "monitoring":
+            return service.monitoring_transactions(min(capped, 100))
+        return service.recent(capped)
 
     @app.get("/customers")
     def customers(request: Request):
+        from .demo_story import DEMO_CUSTOMERS, story_active
+
+        service = svc(request)
+        if not story_active(service):
+            return []
         return [
             {k: v for k, v in customer.items() if k != "assigned_pattern_ids"}
-            for customer in svc(request).data.customers.values()
+            for customer_id, customer in service.data.customers.items()
+            if customer_id in DEMO_CUSTOMERS
         ]
 
     @app.get("/customers/{customer_id}/kyc")
@@ -108,11 +123,10 @@ def create_app(service=None):
 
     @app.get("/alerts/{alert_id}")
     def alert(request: Request, alert_id: str):
-        with svc(request).lock:
-            result = svc(request).store.get_alert(alert_id)
-            if not result:
-                raise HTTPException(404, "Alert not found")
-            return result
+        result = svc(request).get_alert_view(alert_id)
+        if not result:
+            raise HTTPException(404, "Alert not found")
+        return result
 
     @app.post("/alerts/{alert_id}/investigate")
     def investigate(request: Request, alert_id: str, body: InvestigationRequest):
@@ -215,11 +229,18 @@ def create_app(service=None):
                 content,
                 requirements,
             )
-        except ValueError:
+        except ValueError as error:
+            # Keep investigator-facing messages short; never dump raw schema traces.
+            detail = str(error)
+            if "validation error" in detail.lower() or "pydantic" in detail.lower():
+                raise ValueError(
+                    f"{file.filename or 'Document'} could not be extracted. Try again or attach as PDF/text."
+                ) from error
             raise
         except Exception as error:
             raise HTTPException(
-                502, "Document extraction failed. No evidence was accepted; inspect the server log."
+                502,
+                f"{file.filename or 'Document'} could not be attached. No evidence was accepted for this file.",
             ) from error
 
     @app.get("/audit")
