@@ -76,6 +76,10 @@ export default function SummaryRun({alertId, report, stale, onFinished}: {alertI
       })}</ol></aside></div>
       <footer className="cinema-footer">{showingProgress ? playback!==null ? <button className="primary" onClick={()=>{setPlayback(null);setExpanded(false);}}>Open assessment →</button> : <button className="secondary" onClick={()=>setExpanded(false)}>Continue reviewing customer</button> : <button className="primary" onClick={()=>setExpanded(false)}>{failure ? "Return to summary" : "View assessment →"}</button>}</footer>
     </dialog>
-    {!showingProgress && result && <p role="status" className="run-finished"><Check size={16}/> {result.completeness === "complete" ? "Assessment ready. Review the findings below." : "Investigation finished. Additional evidence or quality review is required; see the assessment below."}</p>}
+    {!showingProgress && result && <p role="status" className="run-finished"><Check size={16}/> {result.decision
+      ? "Human decision already recorded. Agent assessment refreshed below."
+      : result.completeness === "complete"
+        ? "Assessment ready. Review the findings below."
+        : "Investigation finished. Additional evidence or quality review is required; see the assessment below."}</p>}
   </section>;
 }

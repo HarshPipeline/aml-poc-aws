@@ -7,6 +7,73 @@ import SummaryRun from "./SummaryRun";
 import { request, runInvestigation, useData, usd, human, scenario, download, episodeWindow, documentsLabel } from "./client";
 import { Heading, Message, Facts, Json } from "./shared";
 
+/** Map AI recommendation (with quality-fail fallback) to a green / red AML risk verdict. */
+function aiAmlVerdict(report?: {
+  recommendation?: string | null;
+  completeness?: string;
+  missing?: string[];
+  critic?: { passed?: boolean; defects?: string[] };
+} | null) {
+  const recommendation = report?.recommendation;
+  if (recommendation === "clear") {
+    return {
+      tone: "green" as const,
+      label: "Low risk · Not AML",
+      detail: "AI assessment: activity looks explained by the case file. Human still records the final close.",
+    };
+  }
+  if (recommendation === "escalate") {
+    return {
+      tone: "red" as const,
+      label: "Elevated AML risk",
+      detail: "AI assessment: activity and documents do not support closing as explained. Escalate for further review.",
+    };
+  }
+  if (recommendation === "request_info") {
+    const qualityFailed = (report?.missing ?? []).some((m) =>
+      /quality review failed/i.test(m),
+    );
+    return {
+      tone: "red" as const,
+      label: qualityFailed
+        ? "AML concern not cleared · Quality check failed"
+        : "AML concern not cleared",
+      detail: qualityFailed
+        ? "AI assessment could not be fully validated against cited evidence. Review quality defects before closing."
+        : "AI assessment: evidence is incomplete or does not match this alert well enough to treat as explained.",
+    };
+  }
+  const qualityFailed = (report?.missing ?? []).some((m) =>
+    /quality review failed/i.test(m),
+  );
+  const criticFailed = report?.critic?.passed === false;
+  const incomplete =
+    report?.completeness === "incomplete" || (report?.missing?.length ?? 0) > 0;
+  if (qualityFailed || criticFailed || incomplete) {
+    return {
+      tone: "red" as const,
+      label: qualityFailed
+        ? "AML concern not cleared · Quality check failed"
+        : "AML concern not cleared",
+      detail: qualityFailed
+        ? "Quality review failed after the AI write-up. Inspect defects before treating this as explained."
+        : "The case file is incomplete or the AI did not produce a clear disposition. Do not close as explained yet.",
+    };
+  }
+  return null;
+}
+
+function AmlVerdictBanner({ report }: { report?: Parameters<typeof aiAmlVerdict>[0] }) {
+  const verdict = aiAmlVerdict(report);
+  if (!verdict) return null;
+  return (
+    <div className={`aml-verdict aml-verdict-${verdict.tone}`} role="status">
+      <strong>{verdict.label}</strong>
+      <p>{verdict.detail}</p>
+    </div>
+  );
+}
+
 export default function Investigation() {
   const { alertId = "" } = useParams(),
     [params, setParams] = useSearchParams();
@@ -174,21 +241,25 @@ export default function Investigation() {
               .filter((item: { status: string }) => item.status !== "received")
               .map((item: { title: string }) => item.title)
               .join("; ");
+            const aml = aiAmlVerdict(report);
             return (
               <div className="next-step">
                 <div>
                   <strong>
-                    {readyForDecision
-                      ? report.recommendation
-                        ? `Suggested action: ${human(report.recommendation)}`
-                        : "Assessment ready for your decision"
-                      : "Additional evidence required"}
+                    {aml
+                      ? aml.label
+                      : readyForDecision
+                        ? report.recommendation
+                          ? `Suggested action: ${human(report.recommendation)}`
+                          : "Assessment ready for your decision"
+                        : "Additional evidence required"}
                   </strong>
                   <p>
-                    {readyForDecision
-                      ? "Read the summary, check the evidence, then record your decision."
-                      : pendingAsk ||
-                        "A recommendation requires additional evidence. Request the listed documents from the customer."}
+                    {aml?.detail ||
+                      (readyForDecision
+                        ? "Read the summary, check the evidence, then record your decision."
+                        : pendingAsk ||
+                          "A recommendation requires additional evidence. Request the listed documents from the customer.")}
                   </p>
                 </div>
                 <button
@@ -225,13 +296,44 @@ export default function Investigation() {
                       </ul>
                     </Panel>
                   )}
-                  {(report.observed || report.next_step) && (
+                  {report.decision && (
+                    <div className="space-y-2">
+                      <Badge
+                        tone={
+                          report.decision.action === "clear"
+                            ? "green"
+                            : report.decision.action === "escalate"
+                              ? "red"
+                              : "amber"
+                        }
+                      >
+                        {report.decision.action === "clear"
+                          ? "Case closed"
+                          : human(report.decision.action)}
+                      </Badge>
+                      <p className="text-sm text-neutral-400">
+                        {report.decision.action === "clear" ? "Explained · " : ""}
+                        Decision recorded by {report.decision.investigator}
+                        {report.decision.preserved_from_prior_review
+                          ? " · Preserved from prior review"
+                          : ""}
+                      </p>
+                    </div>
+                  )}
+                  {(report.observed || report.next_step || report.recommendation || report.missing?.length > 0) && (
                     <Panel title="Verdict">
+                      {!report.decision && <AmlVerdictBanner report={report} />}
                       {report.observed && <p className="text-sm leading-6">{report.observed}</p>}
-                      {report.next_step && (
+                      {report.next_step && !report.decision && (
                         <p className="mt-3 text-sm leading-6">
                           <strong>Suggested next step. </strong>
                           {report.next_step}
+                        </p>
+                      )}
+                      {report.next_step && report.decision && (
+                        <p className="mt-3 text-sm leading-6 text-neutral-400">
+                          <strong>Case is closed. </strong>
+                          If reopening: {report.next_step}
                         </p>
                       )}
                     </Panel>
@@ -319,7 +421,22 @@ export default function Investigation() {
           {tab === "Decision" &&
             (report?.decision ? (
               <Panel title="Recorded Decision">
-                <Badge tone="green">{human(report.decision.action)}</Badge>
+                <Badge
+                  tone={
+                    report.decision.action === "clear"
+                      ? "green"
+                      : report.decision.action === "escalate"
+                        ? "red"
+                        : "amber"
+                  }
+                >
+                  {report.decision.action === "clear"
+                    ? "Case closed"
+                    : human(report.decision.action)}
+                </Badge>
+                {report.decision.action === "clear" && (
+                  <p className="mt-2 text-sm text-neutral-400">Explained</p>
+                )}
                 <p className="mt-4">{report.decision.reason}</p>
                 <p className="mt-2 text-sm text-neutral-400">
                   Reviewed by {report.decision.investigator}
@@ -332,6 +449,7 @@ export default function Investigation() {
               </Panel>
             ) : report?.status === "awaiting_review" ? (
               <Panel title="Investigator Decision">
+                <AmlVerdictBanner report={report} />
                 <form onSubmit={decide} className="space-y-5">
                   <div className="grid gap-4 md:grid-cols-2">
                     <label>

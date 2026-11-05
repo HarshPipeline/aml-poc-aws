@@ -284,9 +284,17 @@ class Service:
             ):
                 return previous
             case_id = f"CASE-{alert_id[4:]}-R{alert['revision']}-{uuid.uuid4().hex[:6]}"
-            if previous and previous["status"] == "awaiting_review":
+            if previous and previous["status"] in {"awaiting_review", "reviewed"} and force:
                 previous["status"] = "superseded"
                 self.store.put_case(previous)
+            elif previous and previous["status"] == "awaiting_review":
+                previous["status"] = "superseded"
+                self.store.put_case(previous)
+            prior_decision = (
+                copy.deepcopy(previous["decision"])
+                if previous and previous.get("decision")
+                else None
+            )
             case = {
                 "case_id": case_id,
                 "alert": copy.deepcopy(alert),
@@ -305,6 +313,8 @@ class Service:
                 "prior_episodes": prior_episode_notes(alert, self.store.alerts(), self.store.latest_cases()),
                 "document_version": self.document_version(alert["customer_id"]),
             }
+            if prior_decision:
+                case["prior_decision"] = prior_decision
             self.store.put_case(case)
             self.store.audit(
                 "orchestrator",
@@ -318,6 +328,7 @@ class Service:
         with self.graph_lock:
             try:
                 result = self.workflow.run(case)
+                self._restore_prior_decision(result, case)
                 self.store.put_case(result)
                 return result
             except Exception as error:
@@ -335,11 +346,34 @@ class Service:
                     case["completeness"] = "incomplete"
                     return case
 
+    def _restore_prior_decision(self, result, source=None):
+        """Keep a closed human decision when force-rerunning AI on a reviewed episode."""
+        prior = (result or {}).get("prior_decision") or (source or {}).get("prior_decision")
+        if not prior or not prior.get("action"):
+            return result
+        result["decision"] = {
+            "action": prior["action"],
+            "reason": prior.get("reason") or "",
+            "investigator": prior.get("investigator") or "auditor",
+            "case_id": result["case_id"],
+            "recorded_at": prior.get("recorded_at") or prior.get("at") or now(),
+            "preserved_from_prior_review": True,
+            "agrees_with_agents": prior.get("action") == result.get("recommendation"),
+        }
+        result["status"] = "reviewed"
+        result["active_agent"] = "human_review"
+        return result
+
     def _close_interrupted(self, case, detail, agent="orchestrator", error_type="Interrupted"):
-        case["status"] = "awaiting_review"
-        case["completeness"] = "incomplete"
-        case["recommendation"] = None
-        case["active_agent"] = "human_review"
+        prior = case.get("prior_decision")
+        if prior and prior.get("action"):
+            self._restore_prior_decision(case)
+            case["completeness"] = case.get("completeness") or "incomplete"
+        else:
+            case["status"] = "awaiting_review"
+            case["completeness"] = "incomplete"
+            case["recommendation"] = None
+            case["active_agent"] = "human_review"
         case["missing"] = list(dict.fromkeys([*(case.get("missing") or []), detail]))
         case["errors"] = [
             *(case.get("errors") or []),

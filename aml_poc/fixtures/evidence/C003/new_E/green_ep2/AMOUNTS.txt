@@ -1,0 +1,10 @@
+Priya live Episode 2 support — green_ep2 (upload these for the open live case)
+Does not replace ep1/ep2/ep3 historical packets.
+
+Outgoing invoices matching LIVE_PRIYA_SPECS:
+  TXN-LIVE-C003-02  Brightwater Logistics Group  $12,400.00
+  TXN-LIVE-C003-04  Kestrel Health Partners      $9,750.00
+
+Live inflows (no invoice required):
+  TXN-LIVE-C003-01  Kestrel Health Partners      $12,500.00 IN
+  TXN-LIVE-C003-03  Alder and Finch Retail Co.   $9,800.00 IN

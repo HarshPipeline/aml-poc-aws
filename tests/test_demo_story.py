@@ -259,6 +259,47 @@ def test_start_posts_casa_and_priya_live_packets(demo_service):
     assert live_again[0]["documents_status"] != "received"
 
 
+def test_seeded_reviews_have_distinct_assessment_fields(demo_service):
+    _seed_demo_stream(demo_service, include_live=False)
+    reveal_story(demo_service)
+    alert = next(
+        a
+        for a in demo_service.list_alerts()
+        if a["customer_id"] == "C002" and a["episode_index"] == 1
+    )
+    case = demo_service.store.latest_case(alert["alert_id"])
+    assert case["status"] == "reviewed"
+    assert case["decision"]["action"] == "clear"
+    reason = case["decision"]["reason"]
+    assert case["observed"] != reason
+    assert case["innocent_explanation"] != reason
+    assert case["innocent_explanation"] != case["observed"]
+    finding_texts = [f["text"] for f in case["findings"]]
+    assert reason not in finding_texts
+    assert case["observed"] not in finding_texts
+
+
+def test_force_reinvestigate_preserves_prior_decision(demo_service):
+    _seed_demo_stream(demo_service, include_live=False)
+    reveal_story(demo_service)
+    alert = next(
+        a
+        for a in demo_service.list_alerts()
+        if a["customer_id"] == "C002" and a["episode_index"] == 1
+    )
+    prior = demo_service.store.latest_case(alert["alert_id"])
+    assert prior["decision"]["action"] == "clear"
+    demo_service.workflow.model = None
+    result = demo_service.investigate(alert["alert_id"], force=True)
+    assert result["case_id"] != prior["case_id"]
+    assert result.get("prior_decision", {}).get("action") == "clear"
+    assert result["decision"]["action"] == "clear"
+    assert result["decision"]["preserved_from_prior_review"] is True
+    assert result["status"] == "reviewed"
+    assert result["recommendation"] == "clear"
+    assert demo_service.store.get_case(prior["case_id"])["status"] == "superseded"
+
+
 def test_png_upload_attaches_in_demo_mode(demo_service):
     _seed_demo_stream(demo_service, include_live=False)
     reveal_story(demo_service)
