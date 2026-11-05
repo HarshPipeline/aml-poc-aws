@@ -58,6 +58,11 @@ details {border:1px solid #262626;border-radius:12px;background:#111;padding:16p
 .open-case {display:inline-flex;align-items:center;gap:12px;padding:7px 11px;border:1px solid #383025;border-radius:6px;color:#fbbf24;white-space:nowrap}.open-case:hover {background:#f59e0b12}
 .priority-dot {display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:8px;background:#737373}.priority-dot.high {background:#fb7185}.priority-dot.medium {background:#fbbf24}
 .next-step {display:flex;align-items:center;justify-content:space-between;gap:24px;padding:20px 24px;background:#f59e0b08;border:1px solid #f59e0b30;border-radius:10px;margin-bottom:24px}.next-step strong {font-size:15px;font-weight:500}.next-step p {font-size:13px;color:#a3a3a3;margin-top:5px}.next-step button {flex-shrink:0}
+.aml-verdict {border-radius:10px;padding:14px 16px;margin-bottom:16px;border:1px solid}
+.aml-verdict strong {display:block;font-size:14px;font-weight:600;letter-spacing:0.01em}
+.aml-verdict p {margin-top:6px;font-size:13px;line-height:1.55;opacity:0.9}
+.aml-verdict-green {background:#10b98114;border-color:#10b98155;color:#34d399}
+.aml-verdict-red {background:#ef444414;border-color:#ef444455;color:#f87171}
 @media(max-width:900px){.queue-summary{gap:24px}.queue-summary>div{display:block}.queue-summary span{display:block}.queue-toolbar>input{width:100%;order:2}.next-step{align-items:start;flex-direction:column}.queue-table{max-width:100%}}
 
 /* Consistent typography and contrast for daily investigation work. */

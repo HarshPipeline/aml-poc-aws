@@ -151,6 +151,20 @@ REVIEWS = {
             "Casa Brisa episode 1 looked like an out-of-region funnel. Invoices and the "
             "cash-and-suppliers letter explained the deposits. Closed."
         ),
+        "observed": (
+            "Out-of-region cash deposits were followed within days by supplier checks. "
+            "Catering invoices and the owner's letter tie the inflows to event work rather "
+            "than an unexplained funnel."
+        ),
+        "findings": [
+            "Cash deposits originated outside the customer's usual footprint in the same window as the alert.",
+            "Supplier check outflows and catering invoices line up with the deposit amounts on the case file.",
+        ],
+        "innocent_explanation": (
+            "A restaurant receiving large event deposits and paying suppliers the same week "
+            "can look like a geographic funnel until invoices are reviewed."
+        ),
+        "next_step": "No further action on this closed episode; keep the watch note if a similar cluster returns.",
     },
     ("C002", "TM-03", 2): {
         "action": "clear",
@@ -162,6 +176,19 @@ REVIEWS = {
             "Casa Brisa episode 2 was the same funnel shape. Documents were provided and "
             "the auditor closed it as explained, with a watch-for-repeat note."
         ),
+        "observed": (
+            "A second out-of-region deposit cluster matched the earlier shape. Supporting "
+            "checks and invoices again explained the activity at catering-scale amounts."
+        ),
+        "findings": [
+            "The episode repeats the prior funnel pattern with a new deposit window.",
+            "Customer-supplied supplier checks and invoices cover the alert amounts.",
+        ],
+        "innocent_explanation": (
+            "Repeat catering bookings can recreate the same deposit-to-supplier sequence "
+            "without indicating layering."
+        ),
+        "next_step": "Closed with a watch-for-repeat note; reopen only if a third similar cluster appears.",
     },
     ("C003", "TM-07", 1): {
         "action": "clear",
@@ -174,6 +201,19 @@ REVIEWS = {
             "Priya Anand-Sorensen episode 1 was a pass-through pattern. Invoices supported "
             "the matched payments. Closed."
         ),
+        "observed": (
+            "Near-equal inbound wires and outbound payments settled against supplier invoices. "
+            "The pattern reads as commercial pass-through rather than unexplained layering."
+        ),
+        "findings": [
+            "Matched pairs show inbound wires closely tracked by outbound payments.",
+            "Supplier invoices on file support the settlement amounts in the alert window.",
+        ],
+        "innocent_explanation": (
+            "A consultant settling client receipts straight through to vendors can produce "
+            "matched in/out pairs that trip pass-through monitoring."
+        ),
+        "next_step": "No further action on this closed episode.",
     },
 }
 
@@ -546,10 +586,13 @@ def seed_closed_reviews(service):
             "steps": [],
             "completeness": "complete",
             "summary": spec["summary"],
-            "observed": spec["reason"],
-            "next_step": "No further action on this closed episode.",
-            "findings": [{"text": spec["reason"], "evidence_ids": ["SEED"]}],
-            "innocent_explanation": spec["reason"],
+            "observed": spec.get("observed") or spec["reason"],
+            "next_step": spec.get("next_step") or "No further action on this closed episode.",
+            "findings": [
+                {"text": text, "evidence_ids": ["SEED"]}
+                for text in (spec.get("findings") or [spec["reason"]])
+            ],
+            "innocent_explanation": spec.get("innocent_explanation") or spec["reason"],
             "recommendation": spec["action"],
             "decision": {
                 "action": spec["action"],
